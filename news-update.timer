@@ -1,0 +1,11 @@
+[Unit]
+Description=News Trend Analysis - Daily Update Timer
+Requires=news-update.service
+
+[Timer]
+OnCalendar=daily
+OnCalendar=08:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

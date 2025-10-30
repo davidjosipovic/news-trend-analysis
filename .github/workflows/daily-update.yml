@@ -1,0 +1,40 @@
+name: Daily News Update
+
+on:
+  schedule:
+    - cron: '0 8 * * *'  # Every day at 8:00 UTC (9:00 CET, 10:00 CEST)
+  workflow_dispatch:  # Enable manual trigger
+
+jobs:
+  update-news:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run daily update pipeline
+        env:
+          NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
+        run: |
+          python daily_update.py --max-results 50
+      
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add data/ models/
+          git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 Daily update: $(date +'%Y-%m-%d %H:%M UTC') [skip ci]" && git push)

@@ -1,0 +1,21 @@
+# Railway ignore file
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.git/
+.github/
+.gitignore
+*.md
+!README.md
+logs/
+.env.local
+.DS_Store
+*.log
