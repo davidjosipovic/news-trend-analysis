@@ -46,7 +46,7 @@ Railway automatski build-uje, ali trebaju env variables:
 ### 2. Dodaj varijable:
 ```bash
 PORT=8501
-NEWS_API_KEY=pub_1db3c2bd1a564d0bb165ec313f95602c
+NEWS_API_KEY=YOUR_NEWSDATA_IO_API_KEY
 ```
 
 ### 3. Save changes

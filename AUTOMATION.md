@@ -123,7 +123,7 @@ Pokreće se **na GitHub serverima** - ne treba ti računar!
    - Idi na: `https://github.com/YOUR_USERNAME/news-trend-analysis/settings/secrets/actions`
    - Klikni: **New repository secret**
    - Name: `NEWS_API_KEY`
-   - Value: `pub_1db3c2bd1a564d0bb165ec313f95602c`
+   - Value: `YOUR_NEWSDATA_IO_API_KEY` (get from https://newsdata.io)
    - Klikni: **Add secret**
 
 3. **Gotovo!** 🎉

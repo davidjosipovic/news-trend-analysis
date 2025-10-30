@@ -67,7 +67,7 @@ git push -u origin main
 
 3. **Unesi:**
    - Name: `NEWS_API_KEY`
-   - Secret: `pub_1db3c2bd1a564d0bb165ec313f95602c`
+   - Secret: `YOUR_NEWSDATA_IO_API_KEY`
 
 4. **Klikni:** "Add secret"
 
@@ -146,7 +146,7 @@ git push -u origin main
    - Klikni na service → "Variables" tab
    - Add variable:
      ```
-     NEWS_API_KEY=pub_1db3c2bd1a564d0bb165ec313f95602c
+     NEWS_API_KEY=YOUR_NEWSDATA_IO_API_KEY
      ```
    - Save (automatski restart)
 

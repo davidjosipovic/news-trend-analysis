@@ -10,7 +10,7 @@ Copy-paste komande za potpuni setup!
 ✅ `data/processed/articles_with_summary.csv` postoji  
 ✅ Imaš GitHub nalog  
 ✅ Imaš Railway nalog (ili ćeš napraviti)  
-✅ API key: `pub_1db3c2bd1a564d0bb165ec313f95602c`
+✅ API key: `YOUR_NEWSDATA_IO_API_KEY`
 
 ---
 
@@ -51,7 +51,7 @@ git push -u origin main
 1. Open: `https://github.com/YOUR_USERNAME/news-trend-analysis/settings/secrets/actions`
 2. Click: **"New repository secret"**
 3. Name: `NEWS_API_KEY`
-4. Secret: `pub_1db3c2bd1a564d0bb165ec313f95602c`
+4. Secret: `YOUR_NEWSDATA_IO_API_KEY`
 5. Click: **"Add secret"**
 
 **PAUSE:** Verifikuj da secret postoji u listi!
@@ -106,7 +106,7 @@ git push -u origin main
 3. Click: **"+ New Variable"**
 4. Add:
    ```
-   NEWS_API_KEY=pub_1db3c2bd1a564d0bb165ec313f95602c
+   NEWS_API_KEY=YOUR_NEWSDATA_IO_API_KEY
    ```
 5. Service will auto-restart
 
