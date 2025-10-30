@@ -1,15 +1,19 @@
+# Railway-specific lightweight requirements
+# Only what's needed for dashboard (NOT for NLP processing)
+
 streamlit>=1.28.0
 plotly>=5.17.0
 pandas>=2.1.0
-transformers>=4.35.0
-torch>=2.1.0
-bertopic>=0.16.0
-sentence-transformers>=2.2.0
-requests>=2.31.0
-nltk>=3.8.0
-scikit-learn>=1.3.0
-umap-learn>=0.5.4
-hdbscan>=0.8.33
 python-dotenv>=1.0.0
-beautifulsoup4>=4.12.0
-lxml>=4.9.0
+
+# These are NOT needed on Railway (only for GitHub Actions):
+# transformers
+# torch
+# bertopic
+# sentence-transformers
+# nltk
+# scikit-learn
+# umap-learn
+# hdbscan
+# beautifulsoup4
+# lxml
