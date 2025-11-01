@@ -1,0 +1,30 @@
+{
+  "manual_topic_names": {
+    "0": {
+      "short_name": "Economic Development",
+      "full_name": "Economic Sector Development & Prosperity",
+      "description": "Articles about economic growth, sectoral development, innovation, and future prosperity initiatives"
+    },
+    "1": {
+      "short_name": "US-China Trade Relations",
+      "full_name": "Trade Tensions & Tariff Policies",
+      "description": "Coverage of US-China trade negotiations, tariffs, APEC summit, and international economic diplomacy"
+    },
+    "2": {
+      "short_name": "Market Trends & Demand",
+      "full_name": "Consumer Demand & Industry Growth",
+      "description": "Analysis of market demand patterns, consumer spending, industry trends, and business growth projections"
+    },
+    "3": {
+      "short_name": "Monetary Policy & Inflation",
+      "full_name": "Inflation Forecasts & Financial Policy",
+      "description": "Central bank policies, inflation forecasts, interest rates, investment strategies, and financial risk management"
+    },
+    "4": {
+      "short_name": "Business Leadership",
+      "full_name": "Corporate Strategy & Business Development",
+      "description": "CEO perspectives, business strategies, corporate entry strategies, and economic development initiatives"
+    }
+  },
+  "use_manual_names": false
+}

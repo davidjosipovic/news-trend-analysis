@@ -3,11 +3,11 @@ from transformers import pipeline
 import os
 import torch
 
-def train_sentiment_model():
+def analyze_sentiment():
     """
-    Load articles from CSV, analyze sentiment using HuggingFace model,
-    and save results with sentiment column.
-    Optimized for CPU with batch processing.
+    Analyze sentiment of articles using pre-trained RoBERTa model.
+    Applies inference (no training) with batch processing on CPU.
+    Saves results with sentiment labels and confidence scores.
     """
     # Set CPU threads for optimal performance
     torch.set_num_threads(torch.get_num_threads())
@@ -40,8 +40,9 @@ def train_sentiment_model():
     # Batch process all texts at once (much faster!)
     results = sentiment_pipeline(texts, truncation=True, max_length=512)
     
-    # Map results to simple categories
+    # Map results to simple categories and save confidence scores
     sentiments = []
+    confidences = []
     for result in results:
         label = result['label'].lower()
         if 'pos' in label:
@@ -51,11 +52,20 @@ def train_sentiment_model():
         else:
             sentiment = 'neutral'
         sentiments.append(sentiment)
+        confidences.append(round(result['score'], 4))
     
     print(f"Processed {len(df)} articles")
     
-    # Add sentiment column
+    # Add sentiment and confidence columns
     df['sentiment'] = sentiments
+    df['sentiment_confidence'] = confidences
+    
+    # Report confidence statistics
+    avg_confidence = sum(confidences) / len(confidences) if confidences else 0
+    low_confidence_count = sum(1 for c in confidences if c < 0.7)
+    print(f"Average confidence: {avg_confidence:.3f}")
+    if low_confidence_count > 0:
+        print(f"⚠️  {low_confidence_count} articles have low confidence (< 0.7)")
     
     # Save to CSV
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
@@ -64,4 +74,4 @@ def train_sentiment_model():
     print(f"\nSentiment distribution:\n{df['sentiment'].value_counts()}")
 
 if __name__ == "__main__":
-    train_sentiment_model()
+    analyze_sentiment()

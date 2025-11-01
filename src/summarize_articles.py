@@ -104,6 +104,16 @@ def summarize_articles():
     df.to_csv(output_path, index=False)
     
     print(f"\nSummaries saved to {output_path}")
+    
+    # Calculate and report quality metrics
+    valid_summaries = df[df['summary'].notna() & (df['summary'].str.strip() != '')]
+    if len(valid_summaries) > 0:
+        summary_word_counts = valid_summaries['summary'].str.split().str.len()
+        avg_summary_words = summary_word_counts.mean()
+        print(f"\n📊 Summary Quality:")
+        print(f"   • Coverage: {len(valid_summaries)}/{len(df)} articles ({len(valid_summaries)/len(df)*100:.1f}%)")
+        print(f"   • Average length: {avg_summary_words:.0f} words")
+        print(f"   • Range: {summary_word_counts.min()}-{summary_word_counts.max()} words")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,71 @@
+{
+  "timestamp": "2025-11-01T10:48:43.133613",
+  "metrics": {
+    "data_quality": {
+      "total_articles": 55,
+      "complete_articles": 55,
+      "completeness_rate": 100.0,
+      "avg_text_length": 11967.0,
+      "avg_word_count": 1748.0,
+      "text_length_range": [
+        1206,
+        238565
+      ]
+    },
+    "sentiment": {
+      "distribution": {
+        "neutral": 33,
+        "positive": 21,
+        "negative": 1
+      },
+      "percentages": {
+        "neutral": 60.0,
+        "positive": 38.2,
+        "negative": 1.8
+      },
+      "imbalance_ratio": 33.33
+    },
+    "topics": {
+      "num_topics": 5,
+      "outlier_count": 1,
+      "outlier_rate": 1.82,
+      "avg_topic_size": 10.8,
+      "topic_size_range": [
+        4,
+        18
+      ],
+      "coherence_proxy": 100.0
+    },
+    "summarization": {
+      "coverage": 100.0,
+      "avg_summary_length": 309.0,
+      "avg_summary_words": 51.0,
+      "avg_compression_ratio": 37.74,
+      "summary_length_range": [
+        193,
+        439
+      ],
+      "quality_warnings": {
+        "too_short": 0,
+        "too_long": 0
+      }
+    },
+    "temporal": {
+      "articles_with_dates": 55,
+      "date_range_days": 1,
+      "articles_per_day": 55.0,
+      "start_date": "2025-10-30T04:36:33",
+      "end_date": "2025-10-31T21:45:37"
+    },
+    "overall_quality": {
+      "score": 85.0,
+      "rating": "\u2705 GOOD",
+      "component_scores": {
+        "data_completeness": 100.0,
+        "sentiment_balance": 0,
+        "topic_quality": 100,
+        "summarization": 100.0
+      }
+    }
+  }
+}

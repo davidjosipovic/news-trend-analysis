@@ -1,71 +1,104 @@
 #!/usr/bin/env python
 """
-Example script showing how to use the news trend analysis pipeline.
-This demonstrates the complete workflow from fetching news to visualization.
+Complete news trend analysis pipeline.
+Runs all steps from fetching articles to generating summaries and dashboard-ready data.
 """
 
 import os
 import sys
+import subprocess
 
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-from fetch_news import fetch_news
-from preprocess import clean_articles
-from train_sentiment_model import train_sentiment_model
-from summarize import summarize_articles
+from fetch_articles import fetch_news
+from preprocess_articles import clean_articles
+from analyze_sentiment import analyze_sentiment
+from discover_topics import discover_topics
+from summarize_articles import summarize_articles
+from evaluate_pipeline import evaluate_pipeline
 
 def main():
-    """Run the complete pipeline."""
+    """Run the complete 7-step pipeline with evaluation."""
     
     print("=" * 60)
-    print("News Trend Analysis Pipeline")
+    print("📰 News Trend Analysis Pipeline")
     print("=" * 60)
     
     # Step 1: Fetch news articles
-    print("\n[1/4] Fetching news articles...")
+    print("\n[1/7] 🔍 Fetching news articles from NewsData.io...")
     print("-" * 60)
     
-    # You need to get an API key from https://newsapi.org/
     api_key = os.environ.get('NEWS_API_KEY', 'your_api_key_here')
     
     if api_key == 'your_api_key_here':
-        print("⚠️  Warning: Using placeholder API key.")
-        print("   Get a free API key from: https://newsapi.org/")
-        print("   Then set it: export NEWS_API_KEY='your_actual_key'")
+        print("⚠️  Warning: No API key found.")
+        print("   Get a free API key from: https://newsdata.io/")
+        print("   Then create .env file: NEWS_API_KEY=your_actual_key")
         print("\n   Skipping fetch step. Using existing data if available...")
     else:
-        articles = fetch_news(api_key, query="technology OR economy", language="en")
-        if not articles:
-            print("❌ Failed to fetch articles. Check your API key.")
+        try:
+            articles = fetch_news(api_key, query="economy", language="en", max_results=50)
+            if not articles:
+                print("❌ No articles fetched. Check your API key or query.")
+                return
+            print(f"✅ Fetched {len(articles)} articles")
+        except Exception as e:
+            print(f"❌ Error fetching articles: {e}")
             return
     
-    # Step 2: Preprocess articles
-    print("\n[2/4] Preprocessing articles...")
+    # Step 2: Scrape full article content
+    print("\n[2/7] 🕷️  Scraping full article content from websites...")
+    print("-" * 60)
+    try:
+        result = subprocess.run(['python3', 'src/scrape_articles.py'], 
+                              capture_output=True, text=True, timeout=300)
+        if result.returncode == 0:
+            print("✅ Articles scraped successfully")
+        else:
+            print(f"⚠️  Scraping had some issues: {result.stderr}")
+            print("   Continuing with available data...")
+    except subprocess.TimeoutExpired:
+        print("⚠️  Scraping timeout. Continuing with partial data...")
+    except Exception as e:
+        print(f"⚠️  Scraping error: {e}. Continuing with API data...")
+    
+    # Step 3: Preprocess and clean articles
+    print("\n[3/7] 🧹 Preprocessing and cleaning articles...")
     print("-" * 60)
     try:
         df = clean_articles()
-        print(f"✅ Successfully preprocessed {len(df)} articles")
+        print(f"✅ Successfully preprocessed {len(df)} articles (200+ words, no paid content)")
     except FileNotFoundError as e:
         print(f"❌ Error: {e}")
-        print("   Please run step 1 first to fetch articles.")
+        print("   Please run steps 1-2 first to fetch and scrape articles.")
         return
     except Exception as e:
         print(f"❌ Error during preprocessing: {e}")
         return
     
-    # Step 3: Sentiment analysis
-    print("\n[3/4] Analyzing sentiment...")
+    # Step 4: Sentiment analysis
+    print("\n[4/7] 😊 Analyzing sentiment with RoBERTa...")
     print("-" * 60)
     try:
-        train_sentiment_model()
+        analyze_sentiment()
         print("✅ Sentiment analysis complete")
     except Exception as e:
         print(f"❌ Error during sentiment analysis: {e}")
         return
     
-    # Step 4: Summarize articles
-    print("\n[4/4] Generating summaries...")
+    # Step 5: Topic modeling
+    print("\n[5/7] 🏷️  Discovering topics with BERTopic...")
+    print("-" * 60)
+    try:
+        discover_topics()
+        print("✅ Topic modeling complete")
+    except Exception as e:
+        print(f"❌ Error during topic modeling: {e}")
+        return
+    
+    # Step 6: Generate summaries
+    print("\n[6/7] 📝 Generating summaries with DistilBART...")
     print("-" * 60)
     try:
         summarize_articles()
@@ -74,15 +107,30 @@ def main():
         print(f"❌ Error during summarization: {e}")
         return
     
+    # Step 7: Evaluate pipeline quality
+    print("\n[7/7] 📊 Evaluating pipeline quality...")
+    print("-" * 60)
+    try:
+        evaluation_results = evaluate_pipeline()
+        print("✅ Evaluation complete")
+    except Exception as e:
+        print(f"❌ Error during evaluation: {e}")
+        print("   Pipeline completed but evaluation failed.")
+    
     # Done!
     print("\n" + "=" * 60)
-    print("✅ Pipeline complete!")
+    print("🎉 Pipeline Complete!")
     print("=" * 60)
-    print("\nNext steps:")
-    print("1. Run the dashboard: streamlit run dashboard/streamlit_app.py")
-    print("2. View results in: data/processed/articles_with_summary.csv")
-    print("3. For topic modeling: python src/train_topic_model.py")
-    print("4. For MLflow tracking: python src/evaluate.py")
+    print("\n📊 Output files created:")
+    print("   • data/processed/articles.csv")
+    print("   • data/processed/articles_with_sentiment.csv")
+    print("   • data/processed/articles_with_topics.csv")
+    print("   • data/processed/articles_with_summary.csv")
+    print("   • data/evaluation/evaluation_report.json")
+    print("   • data/evaluation/evaluation_report.txt")
+    print("\n🚀 Next steps:")
+    print("   1. View dashboard: streamlit run dashboard/streamlit_app.py")
+    print("   2. Access at: http://localhost:8501")
     print()
 
 if __name__ == "__main__":

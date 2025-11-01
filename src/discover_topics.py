@@ -5,9 +5,10 @@ from sentence_transformers import SentenceTransformer
 import os
 import torch
 
-def train_topic_model(input_file='data/processed/articles_with_sentiment.csv', output_dir='models/topic_model'):
+def discover_topics(input_file='data/processed/articles_with_sentiment.csv', output_dir='models/topic_model'):
     """
-    Train BERTopic model on preprocessed articles.
+    Discover topics in articles using BERTopic clustering.
+    Uses pre-trained sentence embeddings + HDBSCAN clustering (unsupervised).
     CPU-optimized with multi-threading.
     
     Args:
@@ -75,18 +76,42 @@ def train_topic_model(input_file='data/processed/articles_with_sentiment.csv', o
     # Add topic assignments to dataframe (PRESERVE all existing columns including sentiment)
     df['topic'] = topics
     
-    # Add automatic topic labels from model
+    # Add automatic topic labels with improved naming
     print("\n✅ Generating automatic topic labels...")
     topic_labels = {}
+    topic_descriptions = {}
+    
+    # Define stop words to exclude from labels
+    stop_words = {'we', 'us', 'our', 'they', 'their', 'this', 'that', 'these', 'those', 
+                  'will', 'would', 'could', 'should', 'can', 'may', 'might', 'must',
+                  'said', 'says', 'say', 'year', 'years', 'new', 'also', 'been', 'being'}
+    
     for topic_id in topic_model.get_topics().keys():
         if topic_id != -1:  # Skip outlier
             # Get top words for topic
             words = topic_model.get_topic(topic_id)
-            # Create label from top 3 keywords
-            label = "_".join([w[0] for w in words[:3]]).title()
+            
+            # Filter out stop words and select meaningful keywords
+            filtered_words = [w[0] for w in words if w[0].lower() not in stop_words][:5]
+            
+            # Create concise label from top 2-3 keywords
+            if len(filtered_words) >= 3:
+                # Use top 3 meaningful words
+                label = "_".join(filtered_words[:3]).title()
+            elif len(filtered_words) >= 2:
+                # Use top 2 if we have them
+                label = "_".join(filtered_words[:2]).title()
+            else:
+                # Fallback to original if filtering removed too much
+                label = "_".join([w[0] for w in words[:3]]).title()
+            
+            # Create human-readable description
+            top_5_words = ", ".join(filtered_words[:5])
+            topic_descriptions[topic_id] = f"{label} ({top_5_words})"
             topic_labels[topic_id] = label
         else:
             topic_labels[topic_id] = "Outlier"
+            topic_descriptions[topic_id] = "Outlier (Mixed Topics)"
     
     df['topic_label'] = df['topic'].map(topic_labels)
     
@@ -94,12 +119,13 @@ def train_topic_model(input_file='data/processed/articles_with_sentiment.csv', o
     df.to_csv(output_csv, index=False)
     print(f"✅ Topic assignments saved to {output_csv}")
     print(f"   Columns: {list(df.columns)}")
-    print(f"\n✅ Automatic topic labels:")
-    for topic_id, label in sorted(topic_labels.items()):
+    print(f"\n✅ Improved topic labels:")
+    for topic_id in sorted(topic_labels.keys()):
         count = (df['topic'] == topic_id).sum()
-        print(f"   Topic {topic_id}: {label} ({count} articles)")
+        description = topic_descriptions.get(topic_id, topic_labels[topic_id])
+        print(f"   Topic {topic_id}: {description} - {count} articles")
     
     return topic_model, topics
 
 if __name__ == "__main__":
-    train_topic_model()
+    discover_topics()
