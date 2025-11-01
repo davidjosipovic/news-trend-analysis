@@ -30,7 +30,25 @@ jobs:
         env:
           NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
         run: |
-          python daily_update.py --max-results 50
+          echo "Step 1: Fetching news..."
+          python src/fetch_news.py
+          
+          echo "Step 2: Scraping full content..."
+          python src/scrape_articles.py
+          
+          echo "Step 3: Preprocessing..."
+          python src/preprocess.py
+          
+          echo "Step 4: Sentiment analysis..."
+          python src/train_sentiment_model.py
+          
+          echo "Step 5: Topic modeling..."
+          python src/train_topic_model.py
+          
+          echo "Step 6: Summarization..."
+          python src/summarize.py
+          
+          echo "✅ Pipeline complete!"
       
       - name: Commit and push changes
         run: |
