@@ -198,12 +198,12 @@ Articles are **automatically filtered** based on:
 
 ### Models
 
-| Task | Model | Source |
-|------|-------|--------|
-| **Sentiment** | `cardiffnlp/twitter-roberta-base-sentiment-latest` | HuggingFace |
-| **Embeddings** | `all-MiniLM-L6-v2` | Sentence-Transformers |
-| **Summarization** | `sshleifer/distilbart-cnn-12-6` | HuggingFace |
-| **Topic Modeling** | BERTopic + HDBSCAN | Custom configuration |
+| Task | Model | Source | Why This Model? |
+|------|-------|--------|-----------------|
+| **Sentiment** | `ProsusAI/finbert` | HuggingFace | Fine-tuned on **financial news** (better for economic articles than Twitter-based models) |
+| **Embeddings** | `all-MiniLM-L6-v2` | Sentence-Transformers | Fast, efficient semantic embeddings |
+| **Summarization** | `sshleifer/distilbart-cnn-12-6` | HuggingFace | Compressed BART trained on **CNN news articles** |
+| **Topic Modeling** | BERTopic + HDBSCAN | Custom configuration | Unsupervised clustering with auto-generated labels |
 
 ## 🚢 Deployment
 
@@ -233,16 +233,31 @@ NewsData.io API → fetch_articles.py → scrape_articles.py → preprocess_arti
 
 ## 🔬 Analysis Details
 
+### Why Pre-trained Models? (No Training Required)
+
+This project uses **transfer learning** - applying pre-trained models rather than training from scratch. This approach is:
+
+1. **Industry Standard**: Pre-trained transformers (RoBERTa, BART) are trained on billions of tokens
+2. **More Accurate**: FinBERT trained on 4.9M financial sentences vs. our 55 articles
+3. **Practical**: Training BERT from scratch requires 4 TPUs for 4 days (~$500-1000)
+4. **Academic**: Demonstrates proper use of state-of-the-art NLP (BERT, transformers)
+
+**Models Used:**
+- **FinBERT**: Fine-tuned BERT for financial sentiment (Prosus AI)
+- **DistilBART**: Distilled BART for news summarization (trained on CNN/DailyMail)
+- **BERTopic**: Unsupervised topic discovery (no training needed)
+
 ### Sentiment Analysis
-- **Model**: RoBERTa fine-tuned on Twitter sentiment
+- **Model**: FinBERT (BERT fine-tuned on financial news corpus)
 - **Output**: Positive, Neutral, Negative (with confidence scores)
-- **CPU-optimized**: Batch processing for performance
+- **Inference**: Batch processing on CPU (no GPU required)
+- **Advantages**: Understands financial terminology ("rate cut", "inflation", "growth")
 
 ### Topic Modeling
 - **Algorithm**: HDBSCAN clustering on sentence embeddings
 - **Dimensionality Reduction**: UMAP
-- **Labels**: Auto-generated using KeyBERT
-- **Dynamic**: Discovers new topics as articles grow
+- **Labels**: Auto-generated using KeyBERT (unsupervised)
+- **Dynamic**: Discovers new topics as articles grow (no predefined categories)
 
 ### Summarization
 - **Model**: DistilBART (compressed BART for efficiency)

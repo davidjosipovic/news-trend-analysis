@@ -17,7 +17,7 @@ def analyze_sentiment():
     print("Loading sentiment analysis model...")
     sentiment_pipeline = pipeline(
         "sentiment-analysis",
-        model="cardiffnlp/twitter-roberta-base-sentiment-latest",
+        model="ProsusAI/finbert",  # Financial news sentiment model
         device=-1,  # Force CPU
         batch_size=16  # Process multiple articles at once
     )
