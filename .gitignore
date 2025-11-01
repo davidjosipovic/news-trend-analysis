@@ -32,11 +32,6 @@ env/
 *.swp
 *.swo
 
-# DVC (not used anymore)
-.dvc/
-dvc.yaml
-dvc.lock
-
 # Streamlit cache
 .streamlit/
 
@@ -47,6 +42,9 @@ Thumbs.db
 # Logs (keep data, commit processed results)
 logs/
 *.log
+
+# MLflow tracking (not used)
+mlflow_tracking/
 
 # Environment variables (but keep .env.example)
 .env
