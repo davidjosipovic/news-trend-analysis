@@ -63,7 +63,7 @@ try:
     show_duplicates = st.sidebar.checkbox(
         "Show duplicate articles from different sources", 
         value=False,
-        help="Same news story covered by multiple sources"
+        help="Same news story covered by multiple sources. When disabled, charts and metrics show unique articles only."
     )
     
     # Apply filters
@@ -72,6 +72,12 @@ try:
         filtered_df = filtered_df[filtered_df['sentiment'] == selected_sentiment]
     if 'topic_name' in df.columns and selected_topic != 'All':
         filtered_df = filtered_df[filtered_df['topic_name'] == selected_topic]
+    
+    # Remove duplicates for charts if option is disabled
+    if not show_duplicates and 'title' in filtered_df.columns:
+        chart_df = filtered_df.drop_duplicates(subset=['title']).copy()
+    else:
+        chart_df = filtered_df.copy()
     
     # Apply sorting
     if 'publishedAt' in filtered_df.columns:
@@ -89,53 +95,59 @@ try:
     # Metrics
     col1, col2, col3, col4 = st.columns(4)
     
-    # Calculate unique articles count
-    unique_count = len(filtered_df.drop_duplicates(subset=['title'])) if 'title' in filtered_df.columns else len(filtered_df)
+    # Calculate counts
+    total_count = len(filtered_df)  # Total including duplicates
+    # Unique count is always the same (deduplicated by title)
+    unique_count = len(filtered_df.drop_duplicates(subset=['title'])) if 'title' in filtered_df.columns else total_count
     
-    col1.metric("Total Articles", len(filtered_df))
+    col1.metric("Total Articles", total_count)
     col2.metric("Unique Articles", unique_count)
-    if 'sentiment' in filtered_df.columns:
-        col3.metric("Most Common Sentiment", filtered_df['sentiment'].mode()[0] if len(filtered_df) > 0 else "N/A")
-    if 'sentiment_confidence' in filtered_df.columns and len(filtered_df) > 0:
-        avg_confidence = filtered_df['sentiment_confidence'].mean()
+    if 'sentiment' in chart_df.columns:
+        col3.metric("Most Common Sentiment", chart_df['sentiment'].mode()[0] if len(chart_df) > 0 else "N/A")
+    if 'sentiment_confidence' in chart_df.columns and len(chart_df) > 0:
+        avg_confidence = chart_df['sentiment_confidence'].mean()
         col4.metric("Avg Confidence", f"{avg_confidence:.1%}")
-    elif 'topic_name' in filtered_df.columns:
-        col4.metric("Most Common Topic", filtered_df['topic_name'].mode()[0] if len(filtered_df) > 0 else "N/A")
+    elif 'topic_name' in chart_df.columns:
+        col4.metric("Most Common Topic", chart_df['topic_name'].mode()[0] if len(chart_df) > 0 else "N/A")
+    
+    # Show info if duplicates are hidden
+    if not show_duplicates and total_count > unique_count:
+        st.info(f"📊 Charts below show **{unique_count} unique articles** ({total_count - unique_count} duplicates hidden). Toggle 'Show duplicates' in sidebar to include all {total_count} articles in visualizations.")
     
     # Charts
     col1, col2 = st.columns(2)
     
-    # Bar chart - articles by topic
+    # Bar chart - articles by topic (using chart_df for unique/all data)
     with col1:
         st.subheader("📈 Articles by Topic")
-        if 'topic_name' in filtered_df.columns:
-            topic_counts = filtered_df['topic_name'].value_counts().reset_index()
+        if 'topic_name' in chart_df.columns:
+            topic_counts = chart_df['topic_name'].value_counts().reset_index()
             topic_counts.columns = ['topic', 'count']
             fig_bar = px.bar(topic_counts, x='topic', y='count', 
                            color='count', color_continuous_scale='Blues')
             st.plotly_chart(fig_bar, use_container_width=True)
     
-    # Pie chart - sentiment distribution
+    # Pie chart - sentiment distribution (using chart_df for unique/all data)
     with col2:
         st.subheader("🎯 Sentiment Distribution")
-        if 'sentiment' in filtered_df.columns:
-            sentiment_counts = filtered_df['sentiment'].value_counts().reset_index()
+        if 'sentiment' in chart_df.columns:
+            sentiment_counts = chart_df['sentiment'].value_counts().reset_index()
             sentiment_counts.columns = ['sentiment', 'count']
             fig_pie = px.pie(sentiment_counts, names='sentiment', values='count',
                            color_discrete_sequence=px.colors.qualitative.Set3)
             st.plotly_chart(fig_pie, use_container_width=True)
     
-    # Line chart - sentiment over time
+    # Line chart - sentiment over time (using chart_df for unique/all data)
     st.subheader("📅 Sentiment Over Time")
-    date_col = 'publishedAt' if 'publishedAt' in filtered_df.columns else 'date'
-    if date_col in filtered_df.columns and 'sentiment' in filtered_df.columns:
+    date_col = 'publishedAt' if 'publishedAt' in chart_df.columns else 'date'
+    if date_col in chart_df.columns and 'sentiment' in chart_df.columns:
         # Parse date if not already datetime
-        if not pd.api.types.is_datetime64_any_dtype(filtered_df[date_col]):
-            filtered_df[date_col] = pd.to_datetime(filtered_df[date_col], errors='coerce')
+        if not pd.api.types.is_datetime64_any_dtype(chart_df[date_col]):
+            chart_df[date_col] = pd.to_datetime(chart_df[date_col], errors='coerce')
         
         # Group by date (without time) and sentiment
-        filtered_df['date_only'] = filtered_df[date_col].dt.date
-        sentiment_time = filtered_df.groupby(['date_only', 'sentiment']).size().reset_index(name='count')
+        chart_df['date_only'] = chart_df[date_col].dt.date
+        sentiment_time = chart_df.groupby(['date_only', 'sentiment']).size().reset_index(name='count')
         
         fig_line = px.line(sentiment_time, x='date_only', y='count', color='sentiment',
                          markers=True, 
@@ -166,16 +178,6 @@ try:
         if total_articles == 0:
             st.info("No articles with summaries found for the selected filters.")
         else:
-            # Show info about duplicates if they exist
-            if not show_duplicates:
-                total_with_dupes = len(filtered_df[
-                    filtered_df['summary'].notna() & 
-                    (filtered_df['summary'].astype(str).str.strip() != '') &
-                    (filtered_df['summary'].astype(str).str.lower() != 'nan')
-                ])
-                if total_with_dupes > total_articles:
-                    st.info(f"ℹ️ Showing {total_articles} unique articles ({total_with_dupes - total_articles} duplicates from other sources hidden). Enable 'Show duplicates' in sidebar to see all.")
-            
             # Pagination settings
             articles_per_page = st.sidebar.number_input(
                 "Articles per page", 
