@@ -2,7 +2,8 @@ name: Daily News Update
 
 on:
   schedule:
-    - cron: '0 8 * * *'  # Every day at 8:00 UTC (9:00 CET, 10:00 CEST)
+    - cron: '0 8 * * *'   # Every day at 8:00 UTC (9:00 CET, 10:00 CEST)
+    - cron: '0 20 * * *'  # Every day at 20:00 UTC (21:00 CET, 22:00 CEST)
   workflow_dispatch:  # Enable manual trigger
 
 jobs:
