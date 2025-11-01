@@ -78,7 +78,7 @@ def main():
         return
     
     # Step 4: Sentiment analysis
-    print("\n[4/7] 😊 Analyzing sentiment with RoBERTa...")
+    print("\n[4/7] 😊 Analyzing sentiment with FinBERT...")
     print("-" * 60)
     try:
         analyze_sentiment()

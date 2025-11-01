@@ -13,7 +13,7 @@
 - 🤖 **Automated News Collection**: Fetches latest economic news from NewsData.io API
 - 🕷️ **Web Scraping**: Extracts full article content from news websites
 - 🧠 **Advanced NLP Analysis**:
-  - **Sentiment Analysis**: RoBERTa transformer model (CardiffNLP)
+  - **Sentiment Analysis**: FinBERT transformer model (Prosus AI)
   - **Topic Modeling**: BERTopic with HDBSCAN clustering
   - **Automatic Summarization**: DistilBART (CNN-trained)
 - 📊 **Interactive Dashboard**: Real-time visualization with Streamlit + Plotly
@@ -44,7 +44,7 @@
 | Category | Technologies |
 |----------|-------------|
 | **Language** | Python 3.11+ |
-| **NLP Models** | Transformers (RoBERTa, DistilBART), BERTopic, Sentence-Transformers |
+| **NLP Models** | Transformers (FinBERT, DistilBART), BERTopic, Sentence-Transformers |
 | **Dashboard** | Streamlit, Plotly |
 | **Deployment** | Railway (dashboard), GitHub Actions (pipeline) |
 | **Data Source** | NewsData.io API |
@@ -134,7 +134,7 @@ news-trend-analysis/
 │   ├── fetch_articles.py            # NewsData.io API integration
 │   ├── scrape_articles.py           # Web scraper (newspaper3k)
 │   ├── preprocess_articles.py       # Text cleaning & filtering
-│   ├── analyze_sentiment.py         # RoBERTa sentiment inference
+│   ├── analyze_sentiment.py         # FinBERT sentiment inference
 │   ├── discover_topics.py           # BERTopic clustering
 │   ├── summarize_articles.py        # DistilBART summarization
 │   └── evaluate_pipeline.py         # Quality metrics & reporting
@@ -237,7 +237,7 @@ NewsData.io API → fetch_articles.py → scrape_articles.py → preprocess_arti
 
 This project uses **transfer learning** - applying pre-trained models rather than training from scratch. This approach is:
 
-1. **Industry Standard**: Pre-trained transformers (RoBERTa, BART) are trained on billions of tokens
+1. **Industry Standard**: Pre-trained transformers (FinBERT, BART) are trained on billions of tokens
 2. **More Accurate**: FinBERT trained on 4.9M financial sentences vs. our 55 articles
 3. **Practical**: Training BERT from scratch requires 4 TPUs for 4 days (~$500-1000)
 4. **Academic**: Demonstrates proper use of state-of-the-art NLP (BERT, transformers)

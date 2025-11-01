@@ -5,7 +5,7 @@ import torch
 
 def analyze_sentiment():
     """
-    Analyze sentiment of articles using pre-trained RoBERTa model.
+    Analyze sentiment of articles using pre-trained FinBERT model.
     Applies inference (no training) with batch processing on CPU.
     Saves results with sentiment labels and confidence scores.
     """
