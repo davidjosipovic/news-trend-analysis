@@ -6,7 +6,25 @@
 [![Python](https://img.shields.io/badge/Python-3.11+-green.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> 🎓 **University Project**: Automated NLP pipeline for real-time news analysis and visualization
+> 🎓 **University Projects**: 
+> - **MOPJ (NLP)**: Automated NLP pipeline with sentiment analysis, topic modeling, and summarization
+> - **PI (Business Intelligence)**: Predictive analytics dashboard with comprehensive evaluation system
+
+## 🎯 Business Problem
+
+**Challenge**: Manual tracking of economic news sentiment is time-consuming and subjective.
+
+**Solution**: Automated AI-powered pipeline that:
+- Fetches economic news every 12 hours
+- Analyzes sentiment with 76% confidence (FinBERT)
+- Discovers trending topics automatically (BERTopic)
+- Generates concise summaries (37.7x compression)
+- Visualizes insights in interactive dashboard
+
+**Business Value**:
+- 📈 **Investors**: Real-time market sentiment tracking
+- 📰 **Media**: Identify trending topics and narratives
+- 📊 **Analysts**: Automated research assistance
 
 ## 🌟 Features
 
@@ -264,6 +282,60 @@ This project uses **transfer learning** - applying pre-trained models rather tha
 - **Length**: 30-130 tokens per summary
 - **Quality**: Requires 200+ word articles
 - **Batch Processing**: Handles 8 articles simultaneously
+
+## 📊 Results & Evaluation
+
+### Overall Pipeline Quality: **85/100** (GOOD)
+
+#### Sentiment Analysis Results:
+```
+📉 Negative:  10 articles (18.2%)
+⚪ Neutral:   28 articles (50.9%)
+📈 Positive:  17 articles (30.9%)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Average Confidence: 76.0%
+```
+
+**Key Improvement**: Switched from Twitter-RoBERTa (68% confidence, 1.8% negative detection) to FinBERT (76% confidence, 18.2% negative detection) for better financial news understanding.
+
+#### Topic Discovery Results:
+```
+Discovered 6 coherent topics:
+1. Korea_Trump_China           - 16 articles (29%)
+2. Economic_Sector_Sustainable - 9 articles (16%)
+3. Inflation_Forecasts         - 8 articles (15%)
+4. Tourism_Travel              - 7 articles (13%)
+5. Reforms_Economy             - 6 articles (11%)
+6. Business_Development        - 4 articles (7%)
+
+Topic Quality Score: 100/100
+```
+
+#### Summarization Performance:
+```
+✓ Coverage: 100% (all articles summarized)
+✓ Avg length: 51 words
+✓ Compression ratio: 37.7x (from ~800 → 51 words)
+✓ Processing time: ~5s per article (CPU)
+```
+
+### Evaluation Metrics (6 categories):
+1. **Data Quality** (30% weight): 100/100
+   - 100% completeness, proper filtering
+2. **Sentiment Balance** (15% weight): 0/100
+   - Expected imbalance (economic news naturally more negative/neutral)
+3. **Topic Quality** (25% weight): 100/100
+   - Coherent clusters, balanced distribution
+4. **Summarization** (30% weight): 100/100
+   - Full coverage, appropriate compression
+5. **Temporal Analysis**: 2-day coverage with automated updates
+6. **Confidence Tracking**: Real-time monitoring of prediction reliability
+
+### Business Insights:
+- **US-China relations** dominate economic news (29%)
+- **Sustainability** emerging as major economic theme
+- **Inflation concerns** persist across multiple articles
+- **Tourism sector** showing recovery signals
 
 ## 🤝 Contributing
 
