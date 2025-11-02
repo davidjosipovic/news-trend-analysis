@@ -26,7 +26,7 @@ def main():
     print("=" * 60)
     
     # Step 1: Fetch news articles
-    print("\n[1/7] 🔍 Fetching news articles from NewsData.io...")
+    print("\n[1/7] 🔍 Fetching latest news articles from NewsData.io (all topics)...")
     print("-" * 60)
     
     api_key = os.environ.get('NEWS_API_KEY', 'your_api_key_here')
@@ -38,7 +38,8 @@ def main():
         print("\n   Skipping fetch step. Using existing data if available...")
     else:
         try:
-            articles = fetch_news(api_key, query="economy", language="en", max_results=50)
+            # query=None fetches latest across all topics
+            articles = fetch_news(api_key, query=None, language="en", max_results=50)
             if not articles:
                 print("❌ No articles fetched. Check your API key or query.")
                 return

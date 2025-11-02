@@ -32,14 +32,14 @@ def load_existing_articles():
     
     return existing_urls
 
-def fetch_news(api_key, query="economy", language="en", max_results=50):
+def fetch_news(api_key, query=None, language="en", max_results=50):
     """
     Fetch news articles from NewsData.io API and save to JSON file.
     Only saves NEW articles (deduplicates by URL).
     
     Args:
         api_key (str): NewsData.io API key
-        query (str): Search query
+    query (str | None): Search query. If None, fetches latest across all topics.
         language (str): Language code
         max_results (int): Maximum number of results to fetch (default 50)
         
@@ -54,9 +54,11 @@ def fetch_news(api_key, query="economy", language="en", max_results=50):
     
     params = {
         "apikey": api_key,
-        "q": query,
         "language": language
     }
+    # Only include query param if provided; otherwise fetch latest across all topics
+    if query:
+        params["q"] = query
     
     try:
         response = requests.get(url, params=params)
@@ -128,5 +130,5 @@ if __name__ == "__main__":
         exit(1)
     
     print(f"API key loaded successfully")
-    print(f"Fetching news articles from NewsData.io...")
-    articles = fetch_news(API_KEY, query="economy", language="en", max_results=50)
+    print(f"Fetching latest news articles from NewsData.io (all topics)...")
+    articles = fetch_news(API_KEY, query=None, language="en", max_results=50)
