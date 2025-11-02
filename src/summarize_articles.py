@@ -31,6 +31,12 @@ def summarize_articles():
     print(f"Loading articles from {input_path}...")
     df = pd.read_csv(input_path)
     
+    # Remove duplicates from input
+    initial_count = len(df)
+    df = df.drop_duplicates(subset=['title', 'publishedAt'], keep='last')
+    if len(df) < initial_count:
+        print(f"Removed {initial_count - len(df)} duplicate articles from input")
+    
     # Check if we have existing summaries to avoid re-processing
     summary_path = "data/processed/articles_with_summary.csv"
     if os.path.exists(summary_path):
@@ -163,6 +169,9 @@ def summarize_articles():
     # Clean up temporary ID column if it exists
     if '_article_id' in df.columns:
         df.drop('_article_id', axis=1, inplace=True)
+    
+    # Remove any duplicate rows before saving
+    df = df.drop_duplicates(subset=['title', 'publishedAt'], keep='last')
 
     # Save to output CSV
     output_path = "data/processed/articles_with_summary.csv"
