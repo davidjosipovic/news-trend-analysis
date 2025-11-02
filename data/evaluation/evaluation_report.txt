@@ -1,18 +1,18 @@
 ============================================================
 NLP Pipeline Evaluation Report
 ============================================================
-Generated: 2025-11-02 10:33:44
+Generated: 2025-11-02 20:06:28
 
-Overall Quality Score: 71.2/100
-Rating: ⚠️  ACCEPTABLE
+Overall Quality Score: 87.1/100
+Rating: ✅ GOOD
 
 {
   "data_quality": {
-    "total_articles": 208,
-    "complete_articles": 208,
+    "total_articles": 81,
+    "complete_articles": 81,
     "completeness_rate": 100.0,
-    "avg_text_length": 6304.0,
-    "avg_word_count": 963.0,
+    "avg_text_length": 9680.0,
+    "avg_word_count": 1419.0,
     "text_length_range": [
       717,
       238565
@@ -20,33 +20,33 @@ Rating: ⚠️  ACCEPTABLE
   },
   "sentiment": {
     "distribution": {
-      "positive": 95,
-      "neutral": 86,
-      "negative": 27
+      "neutral": 45,
+      "positive": 27,
+      "negative": 9
     },
     "percentages": {
-      "positive": 45.7,
-      "neutral": 41.3,
-      "negative": 13.0
+      "neutral": 55.6,
+      "positive": 33.3,
+      "negative": 11.1
     },
-    "imbalance_ratio": 3.52
+    "imbalance_ratio": 5.01
   },
   "topics": {
-    "num_topics": 16,
+    "num_topics": 10,
     "outlier_count": 9,
-    "outlier_rate": 4.33,
-    "avg_topic_size": 12.4,
+    "outlier_rate": 11.11,
+    "avg_topic_size": 7.2,
     "topic_size_range": [
       2,
-      67
+      21
     ],
     "coherence_proxy": 100.0
   },
   "summarization": {
     "coverage": 100.0,
-    "avg_summary_length": 289.0,
-    "avg_summary_words": 48.0,
-    "avg_compression_ratio": 21.25,
+    "avg_summary_length": 312.0,
+    "avg_summary_words": 51.0,
+    "avg_compression_ratio": 29.99,
     "summary_length_range": [
       193,
       439
@@ -57,19 +57,19 @@ Rating: ⚠️  ACCEPTABLE
     }
   },
   "temporal": {
-    "articles_with_dates": 208,
+    "articles_with_dates": 81,
     "date_range_days": 2,
-    "articles_per_day": 104.0,
+    "articles_per_day": 40.5,
     "start_date": "2025-10-30T04:36:33",
     "end_date": "2025-11-01T21:17:00"
   },
   "overall_quality": {
-    "score": 71.2,
-    "rating": "\u26a0\ufe0f  ACCEPTABLE",
+    "score": 87.1,
+    "rating": "\u2705 GOOD",
     "component_scores": {
       "data_completeness": 100.0,
-      "sentiment_balance": 74.8,
-      "topic_quality": 0,
+      "sentiment_balance": 59.9,
+      "topic_quality": 72.5,
       "summarization": 100.0
     }
   }
