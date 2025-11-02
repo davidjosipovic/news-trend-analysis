@@ -23,22 +23,21 @@ def analyze_sentiment():
         batch_size=16  # Process multiple articles at once
     )
     
-    # Load articles
-    input_path = "data/processed/articles.csv"
+    # Load articles with summary
+    input_path = "data/processed/articles_with_summary.csv"
     output_path = "data/processed/articles_with_sentiment.csv"
     
     print(f"Loading articles from {input_path}...")
     df = pd.read_csv(input_path)
     
-    # Prepare texts for batch processing
-    print("Analyzing sentiment with batch processing...")
+    # Prepare summaries for batch processing
+    print("Analyzing sentiment on summaries with batch processing...")
     texts = []
     for idx, row in df.iterrows():
-        text = row.get('content', '') or row.get('text', '') or row.get('title', '')
-        # Truncate text to avoid model limits (514 tokens)
-        texts.append(text[:2000] if text and len(text.strip()) > 0 else "")
+        summary = row.get('summary', '')
+        texts.append(summary[:2000] if summary and len(summary.strip()) > 0 else "")
     
-    # Batch process all texts at once (much faster!)
+    # Batch process all summaries at once
     results = sentiment_pipeline(texts, truncation=True, max_length=512)
     
     # Map results to simple categories and save confidence scores
