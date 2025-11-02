@@ -142,36 +142,8 @@ def scrape_articles_from_json():
     
     return scraped_articles
 
-def update_processed_csv_with_scraped_content():
-    """Update CSV with scraped content."""
-    raw_dir = Path("data/raw")
-    processed_dir = Path("data/processed")
-    processed_dir.mkdir(parents=True, exist_ok=True)
-    
-    scraped_file = raw_dir / "articles_scraped.json"
-    
-    if not scraped_file.exists():
-        print(f"Error: {scraped_file} not found")
-        return
-    
-    with open(scraped_file, 'r', encoding='utf-8') as f:
-        articles = json.load(f)
-    
-    df = pd.DataFrame(articles)
-    df['scraped'] = df['text'].str.len() > 100
-    
-    output_file = processed_dir / "articles.csv"
-    df.to_csv(output_file, index=False, encoding='utf-8')
-    
-    print(f"Processed {len(df)} articles")
-    print(f"Scraped successfully: {df['scraped'].sum()}/{len(df)}")
-    print(f"Saved to: {output_file}")
 
 if __name__ == "__main__":
     print("SCRAPING NEWS ARTICLES")
     scraped_articles = scrape_articles_from_json()
-    
-    if scraped_articles:
-        print("\nUPDATING PROCESSED DATA")
-        update_processed_csv_with_scraped_content()
-        print("\nAll done!")
+    print("\nAll done!")
