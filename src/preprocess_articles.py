@@ -67,9 +67,9 @@ def clean_articles(input_file='data/raw/articles_scraped.json', output_file='dat
         # Remove multiple spaces
         clean_text = re.sub(r'\s+', ' ', clean_text).strip()
         
-        # Only add articles with substantial content (minimum 200 words for good summaries)
+        # Only add articles with substantial content (minimum 100 words for good summaries)
         word_count = len(clean_text.split())
-        if clean_text and word_count >= 200:
+        if clean_text and word_count >= 100:
             processed_articles.append({
                 'title': title,
                 'text': clean_text,
@@ -91,7 +91,7 @@ def clean_articles(input_file='data/raw/articles_scraped.json', output_file='dat
     if skipped_paid > 0:
         print(f"Skipped {skipped_paid} articles with restricted/paid content")
     if skipped_short > 0:
-        print(f"Skipped {skipped_short} articles with insufficient content (< 200 words)")
+        print(f"Skipped {skipped_short} articles with insufficient content (< 100 words)")
     print(f"Successfully processed {len(df)} articles with sufficient content")
     return df
 
