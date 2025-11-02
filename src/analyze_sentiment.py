@@ -5,7 +5,8 @@ import torch
 
 def analyze_sentiment():
     """
-    Analyze sentiment of articles using pre-trained FinBERT model.
+    Analyze sentiment of articles using pre-trained RoBERTa model.
+    Uses cardiffnlp/twitter-roberta-base-sentiment-latest for 3-way sentiment.
     Applies inference (no training) with batch processing on CPU.
     Saves results with sentiment labels and confidence scores.
     """
@@ -17,7 +18,7 @@ def analyze_sentiment():
     print("Loading sentiment analysis model...")
     sentiment_pipeline = pipeline(
         "sentiment-analysis",
-        model="ProsusAI/finbert",  # Financial news sentiment model
+        model="cardiffnlp/twitter-roberta-base-sentiment-latest",  # 3-way sentiment (pos/neu/neg)
         device=-1,  # Force CPU
         batch_size=16  # Process multiple articles at once
     )
