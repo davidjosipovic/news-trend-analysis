@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-11-02T09:57:51.374518",
+  "timestamp": "2025-11-02T10:19:03.108467",
   "metrics": {
     "data_quality": {
       "total_articles": 100,
@@ -26,10 +26,10 @@
       "imbalance_ratio": 4.0
     },
     "topics": {
-      "num_topics": 17,
-      "outlier_count": 7,
-      "outlier_rate": 7.0,
-      "avg_topic_size": 5.5,
+      "num_topics": 16,
+      "outlier_count": 9,
+      "outlier_rate": 9.0,
+      "avg_topic_size": 5.7,
       "topic_size_range": [
         2,
         11
