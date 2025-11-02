@@ -38,18 +38,34 @@ def summarize_articles():
         df_existing = pd.read_csv(summary_path)
         
         # Identify articles that need summarization (not in existing file)
-        # Assuming articles have a unique identifier like 'url' or 'title'
-        # Use URL as the unique key
-        if 'url' in df.columns and 'url' in df_existing.columns:
-            existing_urls = set(df_existing['url'].values)
-            new_articles = df[~df['url'].isin(existing_urls)]
+        # Use title + publishedAt as unique identifier
+        if 'title' in df.columns and 'publishedAt' in df.columns:
+            # Create unique identifier for each article
+            df['_article_id'] = df['title'].astype(str) + '||' + df['publishedAt'].astype(str)
+            df_existing['_article_id'] = df_existing['title'].astype(str) + '||' + df_existing['publishedAt'].astype(str)
+            
+            existing_ids = set(df_existing['_article_id'].values)
+            new_articles_mask = ~df['_article_id'].isin(existing_ids)
+            new_articles = df[new_articles_mask]
             print(f"Found {len(new_articles)} new articles to summarize (out of {len(df)} total)")
+            
+            # Merge existing summaries into the source dataframe
+            df = df.merge(
+                df_existing[['_article_id', 'summary']],
+                on='_article_id',
+                how='left',
+                suffixes=('', '_existing')
+            )
+            
+            # Use existing summary where available
+            if 'summary_existing' in df.columns:
+                df['summary'] = df['summary_existing'].fillna(df.get('summary', ''))
+                df = df.drop('summary_existing', axis=1)
+            
             df_to_summarize = new_articles
             
-            # Merge existing summaries into the main dataframe
-            df = df.merge(df_existing[['url', 'summary']], on='url', how='left')
         else:
-            print("⚠️  No 'url' column found - processing all articles")
+            print("⚠️  No 'title' or 'publishedAt' column found - processing all articles")
             df_to_summarize = df
     else:
         print("No existing summary file found - processing all articles")
@@ -71,57 +87,82 @@ def summarize_articles():
         texts.append(str(text)[:2000])
         valid_indices.append(idx)
 
-    # Batch process all texts at once (much faster!)
-    print(f"Processing {len(texts)} articles...")
-    try:
-        results = summarizer(
-            texts,
-            max_length=130,
-            min_length=30,
-            do_sample=False,
-            truncation=True
-        )
+    # Only process if there are texts to summarize
+    if len(texts) > 0:
+        # Batch process all texts at once (much faster!)
+        print(f"Processing {len(texts)} articles...")
+        try:
+            results = summarizer(
+                texts,
+                max_length=130,
+                min_length=30,
+                do_sample=False,
+                truncation=True
+            )
 
-        # Map results back to dataframe
-        summaries = df['summary'].tolist() if 'summary' in df.columns else [""] * len(df)
-        for i, result in enumerate(results):
-            summaries[valid_indices[i]] = result['summary_text']
+            # Add summaries to the new articles
+            summaries_dict = {}
+            for i, result in enumerate(results):
+                summaries_dict[valid_indices[i]] = result['summary_text']
 
-            if (i + 1) % 10 == 0:
-                print(f"Processed {i + 1}/{len(texts)} articles")
+                if (i + 1) % 10 == 0:
+                    print(f"Processed {i + 1}/{len(texts)} articles")
+            
+            summaries_list = []
+            for idx in df_to_summarize.index:
+                if idx in summaries_dict:
+                    summaries_list.append(summaries_dict[idx])
+                else:
+                    summaries_list.append('')
+            
+            df_to_summarize['summary'] = summaries_list
+            
+            # Update the main dataframe with new summaries
+            for idx in df_to_summarize.index:
+                if idx in summaries_dict:
+                    df.loc[idx, 'summary'] = summaries_dict[idx]
 
-        df['summary'] = summaries
+        except Exception as e:
+            print(f"Batch processing failed: {e}")
+            print("Falling back to sequential processing...")
 
-    except Exception as e:
-        print(f"Batch processing failed: {e}")
-        print("Falling back to sequential processing...")
+            # Fallback: process one by one
+            summaries = []
+            for idx, row in df_to_summarize.iterrows():
+                text = row.get('text', '') or row.get('content', '')
 
-        # Fallback: process one by one
-        summaries = df['summary'].tolist() if 'summary' in df.columns else [""] * len(df)
-        for idx, row in df_to_summarize.iterrows():
-            text = row.get('text', '') or row.get('content', '')
+                if pd.isna(text) or len(str(text).split()) < 30:
+                    summaries.append("")
+                    continue
 
-            if pd.isna(text) or len(str(text).split()) < 30:
-                summaries[idx] = ""
-                continue
+                try:
+                    text_str = str(text)[:2000]
+                    summary = summarizer(
+                        text_str,
+                        max_length=130,
+                        min_length=30,
+                        do_sample=False
+                    )
+                    summaries.append(summary[0]['summary_text'])
+                except Exception as e:
+                    print(f"Error summarizing article {idx}: {e}")
+                    summaries.append("")
 
-            try:
-                text_str = str(text)[:2000]
-                summary = summarizer(
-                    text_str,
-                    max_length=130,
-                    min_length=30,
-                    do_sample=False
-                )
-                summaries[idx] = summary[0]['summary_text']
-            except Exception as e:
-                print(f"Error summarizing article {idx}: {e}")
-                summaries[idx] = ""
+                if (len(summaries)) % 10 == 0:
+                    print(f"Processed {len(summaries)}/{len(df_to_summarize)} articles")
 
-            if (idx + 1) % 10 == 0:
-                print(f"Processed {idx + 1}/{len(df)} articles")
+            df_to_summarize['summary'] = summaries
+            
+            # Update the main dataframe with new summaries
+            for idx, summary in zip(df_to_summarize.index, summaries):
+                if summary:
+                    df.loc[idx, 'summary'] = summary
+    else:
+        print("No new articles to process - using existing summaries")
 
-        df['summary'] = summaries
+    # Clean up temporary ID column if it exists
+    if '_article_id' in df.columns:
+        df.drop('_article_id', axis=1, inplace=True)
 
     # Save to output CSV
     output_path = "data/processed/articles_with_summary.csv"
