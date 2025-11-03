@@ -5,7 +5,7 @@ from sentence_transformers import SentenceTransformer
 import os
 import torch
 
-def discover_topics(input_file='data/processed/articles_with_sentiment.csv', output_dir='models/topic_model'):
+def discover_topics(input_file='data/processed/articles_with_sentiment.csv', output_dir='models/topic_model', retrain=True):
     """
     Discover topics in articles using BERTopic clustering.
     Uses pre-trained sentence embeddings + HDBSCAN clustering (unsupervised).
@@ -14,6 +14,8 @@ def discover_topics(input_file='data/processed/articles_with_sentiment.csv', out
     Args:
         input_file: Path to preprocessed articles CSV (should have sentiment column)
         output_dir: Directory to save the trained model
+        retrain: If True, retrain model on ALL articles. If False, use existing model for new articles.
+                 Note: For topic modeling, retraining is recommended to maintain consistency.
     """
     # Set CPU threads for optimal performance
     num_threads = torch.get_num_threads()

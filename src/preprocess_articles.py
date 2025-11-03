@@ -4,13 +4,15 @@ import pandas as pd
 from pathlib import Path
 import glob
 
-def clean_articles(input_file='data/raw/articles_scraped.json', output_file='data/processed/articles.csv'):
+def clean_articles(input_file='data/raw/articles_scraped.json', output_file='data/processed/articles.csv', incremental=True):
     """
     Load articles from JSON, clean text, and save to CSV.
+    Supports incremental mode to preserve existing articles.
     
     Args:
         input_file: Path to input JSON file (defaults to articles_scraped.json with full content)
         output_file: Path to output CSV file
+        incremental: If True, merge with existing articles.csv and only add new ones
     
     Returns:
         pandas.DataFrame: Cleaned articles
@@ -25,6 +27,13 @@ def clean_articles(input_file='data/raw/articles_scraped.json', output_file='dat
         print(f"Warning: articles_scraped.json not found, using fallback: {input_file}")
     
     print(f"Using input file: {input_file}")
+    
+    # Load existing articles if in incremental mode
+    existing_df = pd.DataFrame()
+    if incremental and Path(output_file).exists():
+        print(f"Loading existing articles from {output_file}...")
+        existing_df = pd.read_csv(output_file)
+        print(f"Found {len(existing_df)} existing articles")
     
     # Load JSON data
     with open(input_file, 'r', encoding='utf-8') as f:
@@ -82,6 +91,16 @@ def clean_articles(input_file='data/raw/articles_scraped.json', output_file='dat
     # Create DataFrame
     df = pd.DataFrame(processed_articles)
     
+    # Merge with existing articles if incremental mode
+    if incremental and not existing_df.empty:
+        print(f"Merging {len(df)} new articles with {len(existing_df)} existing articles...")
+        df = pd.concat([existing_df, df], ignore_index=True)
+    
+    # Remove duplicates using title + publishedAt as unique identifier
+    initial_count = len(df)
+    df = df.drop_duplicates(subset=['title', 'publishedAt'], keep='last')
+    duplicates_removed = initial_count - len(df)
+    
     # Ensure output directory exists
     Path(output_file).parent.mkdir(parents=True, exist_ok=True)
     
@@ -92,7 +111,12 @@ def clean_articles(input_file='data/raw/articles_scraped.json', output_file='dat
         print(f"Skipped {skipped_paid} articles with restricted/paid content")
     if skipped_short > 0:
         print(f"Skipped {skipped_short} articles with insufficient content (< 100 words)")
-    print(f"Successfully processed {len(df)} articles with sufficient content")
+    if duplicates_removed > 0:
+        print(f"Removed {duplicates_removed} duplicate articles (same title + publishedAt)")
+    if incremental and not existing_df.empty:
+        new_articles = len(df) - len(existing_df)
+        print(f"✅ Added {new_articles} new unique articles to existing {len(existing_df)}")
+    print(f"Successfully processed {len(df)} unique articles total")
     return df
 
 
