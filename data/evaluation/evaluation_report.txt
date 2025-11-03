@@ -1,10 +1,10 @@
 ============================================================
 NLP Pipeline Evaluation Report
 ============================================================
-Generated: 2025-11-02 20:06:28
+Generated: 2025-11-03 08:10:17
 
-Overall Quality Score: 87.1/100
-Rating: ✅ GOOD
+Overall Quality Score: 93.4/100
+Rating: 🌟 EXCELLENT
 
 {
   "data_quality": {
@@ -32,13 +32,13 @@ Rating: ✅ GOOD
     "imbalance_ratio": 5.01
   },
   "topics": {
-    "num_topics": 10,
-    "outlier_count": 9,
-    "outlier_rate": 11.11,
-    "avg_topic_size": 7.2,
+    "num_topics": 16,
+    "outlier_count": 12,
+    "outlier_rate": 14.81,
+    "avg_topic_size": 4.3,
     "topic_size_range": [
       2,
-      21
+      11
     ],
     "coherence_proxy": 100.0
   },
@@ -64,12 +64,12 @@ Rating: ✅ GOOD
     "end_date": "2025-11-01T21:17:00"
   },
   "overall_quality": {
-    "score": 87.1,
-    "rating": "\u2705 GOOD",
+    "score": 93.4,
+    "rating": "\ud83c\udf1f EXCELLENT",
     "component_scores": {
       "data_completeness": 100.0,
       "sentiment_balance": 59.9,
-      "topic_quality": 72.5,
+      "topic_quality": 97.5,
       "summarization": 100.0
     }
   }
