@@ -1,4 +1,5 @@
-# Railway ignore file
+# Railway ignore file - only deploy dashboard and processed data
+# Virtual environments and caches
 .venv/
 __pycache__/
 *.pyc
@@ -10,12 +11,39 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+
+# Git and CI/CD
 .git/
 .github/
 .gitignore
+
+# Documentation
 *.md
 !README.md
+*.ipynb
+technical_documentation.ipynb
+
+# Logs
 logs/
 .env.local
 .DS_Store
 *.log
+
+# Source code (not needed for dashboard)
+src/
+run_pipeline.py
+
+# Models (not needed for dashboard)
+models/
+
+# Raw data (only processed data needed)
+data/raw/
+
+# Evaluation reports (not needed for dashboard)
+data/evaluation/
+
+# Config files (not needed for dashboard)
+config/
+
+# Full requirements (use lightweight requirements.txt instead)
+requirements.full.txt
