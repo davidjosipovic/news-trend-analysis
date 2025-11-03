@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-11-03T08:10:17.344317",
+  "timestamp": "2025-11-03T12:06:02.481653",
   "metrics": {
     "data_quality": {
       "total_articles": 81,
@@ -26,13 +26,13 @@
       "imbalance_ratio": 5.01
     },
     "topics": {
-      "num_topics": 16,
-      "outlier_count": 12,
-      "outlier_rate": 14.81,
-      "avg_topic_size": 4.3,
+      "num_topics": 11,
+      "outlier_count": 7,
+      "outlier_rate": 8.64,
+      "avg_topic_size": 6.7,
       "topic_size_range": [
         2,
-        11
+        22
       ],
       "coherence_proxy": 100.0
     },
@@ -58,12 +58,12 @@
       "end_date": "2025-11-01T21:17:00"
     },
     "overall_quality": {
-      "score": 93.4,
-      "rating": "\ud83c\udf1f EXCELLENT",
+      "score": 86.5,
+      "rating": "\u2705 GOOD",
       "component_scores": {
         "data_completeness": 100.0,
         "sentiment_balance": 59.9,
-        "topic_quality": 97.5,
+        "topic_quality": 70.0,
         "summarization": 100.0
       }
     }
