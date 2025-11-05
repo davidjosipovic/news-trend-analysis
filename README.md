@@ -266,10 +266,29 @@ This project uses **transfer learning** - applying pre-trained models rather tha
 - **BERTopic**: Unsupervised topic discovery (no training needed)
 
 ### Sentiment Analysis
-- **Model**: FinBERT (BERT fine-tuned on financial news corpus)
+- **Model**: Fine-tuned RoBERTa with custom adapter (default)
+  - Base: `cardiffnlp/twitter-roberta-base-sentiment-latest`
+  - **Adapter**: Custom fine-tuned on domain-specific data
 - **Output**: Positive, Neutral, Negative (with confidence scores)
-- **Inference**: Batch processing on CPU (no GPU required)
-- **Advantages**: Understands financial terminology ("rate cut", "inflation", "growth")
+- **Inference**: Batch processing on CPU
+- **Advantages**: 
+  - Domain-specific fine-tuning for better accuracy
+  - 69% non-neutral classification (vs 35% for base model)
+  - Better detection of subtle sentiment in news articles
+
+**Using the Adapter:**
+```bash
+# Default: Uses adapter automatically if available
+python src/analyze_sentiment.py
+
+# Force base model
+python src/analyze_sentiment.py --no-adapter
+
+# Compare models
+python compare_models.py --adapter-path ./models/sentiment_adapter_best
+```
+
+For more details, see [README_ADAPTER.md](README_ADAPTER.md)
 
 ### Topic Modeling
 - **Algorithm**: HDBSCAN clustering on sentence embeddings

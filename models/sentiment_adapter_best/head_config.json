@@ -1,0 +1,22 @@
+{
+  "config": {
+    "activation_function": "tanh",
+    "bias": true,
+    "dropout_prob": null,
+    "head_type": "classification",
+    "label2id": {
+      "negative": 0,
+      "neutral": 1,
+      "positive": 2
+    },
+    "layers": 2,
+    "num_labels": 3,
+    "use_pooler": false
+  },
+  "hidden_size": 768,
+  "model_class": "RobertaAdapterModel",
+  "model_name": "cardiffnlp/twitter-roberta-base-sentiment-latest",
+  "model_type": "roberta",
+  "name": "sentiment_adapter",
+  "version": "adapters.1.2.0"
+}

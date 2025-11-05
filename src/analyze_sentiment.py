@@ -1,30 +1,122 @@
 import pandas as pd
-from transformers import pipeline
+from transformers import pipeline, RobertaTokenizerFast
 import os
 import torch
+import sys
+import json
 
-def analyze_sentiment(incremental=True):
+def analyze_sentiment(incremental=True, use_adapter=False, adapter_path=None):
     """
     Analyze sentiment of articles using pre-trained RoBERTa model.
     Uses cardiffnlp/twitter-roberta-base-sentiment-latest for 3-way sentiment.
+    Optionally loads a fine-tuned adapter for improved performance.
     Applies inference (no training) with batch processing on CPU.
     Saves results with sentiment labels and confidence scores.
     
     Args:
         incremental: If True, only process new articles without sentiment
+        use_adapter: If True, use fine-tuned adapter instead of base model
+        adapter_path: Path to adapter directory (e.g., './sentiment_adapter_best')
     """
-    # Set CPU threads for optimal performance
+    # CPU setup
     torch.set_num_threads(torch.get_num_threads())
     print(f"Using CPU with {torch.get_num_threads()} threads")
+    device = torch.device("cpu")
+    pipeline_device = -1
+    batch_size = 16
     
-    # Initialize sentiment analysis pipeline with CPU optimizations
+    # Initialize sentiment analysis model
     print("Loading sentiment analysis model...")
-    sentiment_pipeline = pipeline(
-        "sentiment-analysis",
-        model="cardiffnlp/twitter-roberta-base-sentiment-latest",  # 3-way sentiment (pos/neu/neg)
-        device=-1,  # Force CPU
-        batch_size=16  # Process multiple articles at once
-    )
+    model_name = "cardiffnlp/twitter-roberta-base-sentiment-latest"
+    
+    # Use adapter if specified
+    if use_adapter and adapter_path:
+        print(f"Loading fine-tuned adapter from: {adapter_path}")
+        try:
+            from adapters import AutoAdapterModel
+            
+            # Load model with adapter support
+            model = AutoAdapterModel.from_pretrained(model_name)
+            tokenizer = RobertaTokenizerFast.from_pretrained(model_name)
+            
+            # Load adapter
+            adapter_name = "sentiment_adapter"
+            model.load_adapter(adapter_path, load_as=adapter_name, set_active=True)
+            model.set_active_adapters(adapter_name)
+            model.to(device)
+            model.eval()
+            
+            print(f"✅ Adapter loaded successfully!")
+            print(f"   Active adapters: {model.active_adapters}")
+            
+            # Load label mapping if available, otherwise use default
+            label_mapping_path = os.path.join(adapter_path, "..", "artifacts", "label_mapping.json")
+            id2label = {0: 'negative', 1: 'neutral', 2: 'positive'}  # Default
+            
+            if os.path.exists(label_mapping_path):
+                try:
+                    with open(label_mapping_path, 'r') as f:
+                        label_info = json.load(f)
+                        id2label = {int(k): v for k, v in label_info.get("id2label", {}).items()}
+                        print(f"   Label mapping: {id2label}")
+                except Exception as e:
+                    print(f"   ⚠️ Could not load label mapping: {e}")
+                    print(f"   Using default: {id2label}")
+            else:
+                print(f"   Using default label mapping: {id2label}")
+            
+            # Create custom inference function
+            def adapter_pipeline(texts, truncation=True, max_length=512):
+                results = []
+                for i in range(0, len(texts), batch_size):
+                    batch_texts = texts[i:i+batch_size]
+                    enc = tokenizer(
+                        batch_texts,
+                        truncation=truncation,
+                        padding=True,
+                        return_tensors="pt",
+                        max_length=max_length
+                    )
+                    enc = {k: v.to(device) for k, v in enc.items()}
+                    
+                    with torch.no_grad():
+                        outputs = model(**enc)
+                        logits = outputs.logits
+                        probs = torch.softmax(logits, dim=-1)
+                        pred_ids = probs.argmax(dim=-1).tolist()
+                        scores = probs.max(dim=-1).values.tolist()
+                    
+                    for pred_id, score in zip(pred_ids, scores):
+                        label = id2label.get(pred_id, f"LABEL_{pred_id}")
+                        results.append({"label": label, "score": score})
+                
+                return results
+            
+            sentiment_pipeline = adapter_pipeline
+            using_adapter = True
+            
+        except ImportError:
+            print("⚠️  'adapters' library not installed. Install with: pip install adapter-transformers")
+            print("   Falling back to base model...")
+            use_adapter = False
+            using_adapter = False
+        except Exception as e:
+            print(f"⚠️  Error loading adapter: {e}")
+            print("   Falling back to base model...")
+            use_adapter = False
+            using_adapter = False
+    else:
+        using_adapter = False
+    
+    # Use base model if adapter not used
+    if not use_adapter or not using_adapter:
+        sentiment_pipeline = pipeline(
+            "sentiment-analysis",
+            model=model_name,
+            device=pipeline_device,
+            batch_size=batch_size
+        )
+        print(f"✅ Base model loaded")
     
     # Load articles (preprocessed, no sentiment yet)
     input_path = "data/processed/articles.csv"
@@ -127,4 +219,21 @@ def analyze_sentiment(incremental=True):
     return df_final
 
 if __name__ == "__main__":
-    analyze_sentiment()
+    import argparse
+    parser = argparse.ArgumentParser(description='Sentiment analysis with optional adapter')
+    parser.add_argument('--no-adapter', action='store_true', 
+                       help='Force use of base model instead of adapter')
+    parser.add_argument('--adapter-path', type=str, 
+                       default='./models/sentiment_adapter_best',
+                       help='Path to adapter directory')
+    args = parser.parse_args()
+    
+    # Auto-detect adapter: use it if exists and not explicitly disabled
+    adapter_path = args.adapter_path
+    use_adapter = os.path.exists(adapter_path) and not args.no_adapter
+    
+    if use_adapter:
+        print(f"🎯 Using fine-tuned adapter from: {adapter_path}")
+        print("   (Use --no-adapter to force base model)")
+    
+    analyze_sentiment(use_adapter=use_adapter, adapter_path=adapter_path)

@@ -79,10 +79,17 @@ def main():
         return
     
     # Step 4: Sentiment analysis
-    print("\n[4/7] 😊 Analyzing sentiment with FinBERT...")
+    print("\n[4/7] 😊 Analyzing sentiment...")
     print("-" * 60)
     try:
-        analyze_sentiment()
+        # Auto-detect and use adapter if available
+        adapter_path = 'models/sentiment_adapter_best'
+        if os.path.exists(adapter_path):
+            print(f"🎯 Using fine-tuned adapter from: {adapter_path}")
+            analyze_sentiment(use_adapter=True, adapter_path=adapter_path)
+        else:
+            print("📊 Using base model (no adapter found)")
+            analyze_sentiment()
         print("✅ Sentiment analysis complete")
     except Exception as e:
         print(f"❌ Error during sentiment analysis: {e}")
