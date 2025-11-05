@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-11-05T08:10:35.119989",
+  "timestamp": "2025-11-05T18:51:28.400138",
   "metrics": {
     "data_quality": {
       "total_articles": 149,
@@ -14,25 +14,25 @@
     },
     "sentiment": {
       "distribution": {
-        "neutral": 97,
-        "positive": 40,
-        "negative": 12
+        "positive": 72,
+        "neutral": 51,
+        "negative": 26
       },
       "percentages": {
-        "neutral": 65.1,
-        "positive": 26.8,
-        "negative": 8.1
+        "positive": 48.3,
+        "neutral": 34.2,
+        "negative": 17.4
       },
-      "imbalance_ratio": 8.04
+      "imbalance_ratio": 2.78
     },
     "topics": {
-      "num_topics": 21,
-      "outlier_count": 20,
-      "outlier_rate": 13.42,
-      "avg_topic_size": 6.1,
+      "num_topics": 23,
+      "outlier_count": 26,
+      "outlier_rate": 17.45,
+      "avg_topic_size": 5.3,
       "topic_size_range": [
-        3,
-        14
+        2,
+        11
       ],
       "coherence_proxy": 100.0
     },
@@ -58,12 +58,12 @@
       "end_date": "2025-11-04T20:08:00"
     },
     "overall_quality": {
-      "score": 89.4,
-      "rating": "\u2705 GOOD",
+      "score": 96.7,
+      "rating": "\ud83c\udf1f EXCELLENT",
       "component_scores": {
         "data_completeness": 100.0,
-        "sentiment_balance": 29.6,
-        "topic_quality": 100,
+        "sentiment_balance": 82.2,
+        "topic_quality": 97.5,
         "summarization": 100.0
       }
     }
