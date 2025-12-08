@@ -1,12 +1,12 @@
 {
-  "timestamp": "2025-12-07T20:08:27.033311",
+  "timestamp": "2025-12-08T08:12:58.653672",
   "metrics": {
     "data_quality": {
-      "total_articles": 615,
-      "complete_articles": 615,
+      "total_articles": 621,
+      "complete_articles": 621,
       "completeness_rate": 100.0,
-      "avg_text_length": 4730.0,
-      "avg_word_count": 749.0,
+      "avg_text_length": 4715.0,
+      "avg_word_count": 746.0,
       "text_length_range": [
         578,
         238565
@@ -14,25 +14,25 @@
     },
     "sentiment": {
       "distribution": {
-        "neutral": 258,
-        "positive": 242,
-        "negative": 115
+        "neutral": 261,
+        "positive": 243,
+        "negative": 117
       },
       "percentages": {
         "neutral": 42.0,
-        "positive": 39.3,
-        "negative": 18.7
+        "positive": 39.1,
+        "negative": 18.8
       },
-      "imbalance_ratio": 2.25
+      "imbalance_ratio": 2.23
     },
     "topics": {
-      "num_topics": 93,
-      "outlier_count": 114,
-      "outlier_rate": 18.54,
-      "avg_topic_size": 5.4,
+      "num_topics": 84,
+      "outlier_count": 95,
+      "outlier_rate": 15.3,
+      "avg_topic_size": 6.3,
       "topic_size_range": [
         2,
-        23
+        47
       ],
       "coherence_proxy": 100.0
     },
@@ -40,7 +40,7 @@
       "coverage": 100.0,
       "avg_summary_length": 312.0,
       "avg_summary_words": 53.0,
-      "avg_compression_ratio": 15.27,
+      "avg_compression_ratio": 15.23,
       "summary_length_range": [
         129,
         604
@@ -51,19 +51,19 @@
       }
     },
     "temporal": {
-      "articles_with_dates": 615,
+      "articles_with_dates": 621,
       "date_range_days": 38,
-      "articles_per_day": 16.18,
+      "articles_per_day": 16.34,
       "start_date": "2025-10-30T04:36:33",
-      "end_date": "2025-12-07T08:04:00"
+      "end_date": "2025-12-07T20:09:00"
     },
     "overall_quality": {
-      "score": 90.0,
-      "rating": "\ud83c\udf1f EXCELLENT",
+      "score": 75.0,
+      "rating": "\u2705 GOOD",
       "component_scores": {
         "data_completeness": 100.0,
-        "sentiment_balance": 87.5,
-        "topic_quality": 67.5,
+        "sentiment_balance": 87.7,
+        "topic_quality": 7.5,
         "summarization": 100.0
       }
     }
