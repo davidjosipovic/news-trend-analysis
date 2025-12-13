@@ -1,18 +1,18 @@
 ============================================================
 NLP Pipeline Evaluation Report
 ============================================================
-Generated: 2025-12-12 20:13:00
+Generated: 2025-12-13 08:12:29
 
-Overall Quality Score: 89.1/100
+Overall Quality Score: 75.5/100
 Rating: ✅ GOOD
 
 {
   "data_quality": {
-    "total_articles": 651,
-    "complete_articles": 651,
+    "total_articles": 656,
+    "complete_articles": 656,
     "completeness_rate": 100.0,
-    "avg_text_length": 4845.0,
-    "avg_word_count": 767.0,
+    "avg_text_length": 4835.0,
+    "avg_word_count": 765.0,
     "text_length_range": [
       578,
       238565
@@ -21,24 +21,24 @@ Rating: ✅ GOOD
   "sentiment": {
     "distribution": {
       "neutral": 277,
-      "positive": 253,
-      "negative": 121
+      "positive": 256,
+      "negative": 123
     },
     "percentages": {
-      "neutral": 42.5,
-      "positive": 38.9,
-      "negative": 18.6
+      "neutral": 42.2,
+      "positive": 39.0,
+      "negative": 18.8
     },
-    "imbalance_ratio": 2.28
+    "imbalance_ratio": 2.24
   },
   "topics": {
-    "num_topics": 91,
+    "num_topics": 85,
     "outlier_count": 133,
-    "outlier_rate": 20.43,
-    "avg_topic_size": 5.7,
+    "outlier_rate": 20.27,
+    "avg_topic_size": 6.2,
     "topic_size_range": [
       2,
-      24
+      46
     ],
     "coherence_proxy": 100.0
   },
@@ -46,7 +46,7 @@ Rating: ✅ GOOD
     "coverage": 100.0,
     "avg_summary_length": 311.0,
     "avg_summary_words": 53.0,
-    "avg_compression_ratio": 15.89,
+    "avg_compression_ratio": 15.85,
     "summary_length_range": [
       129,
       604
@@ -57,19 +57,19 @@ Rating: ✅ GOOD
     }
   },
   "temporal": {
-    "articles_with_dates": 651,
+    "articles_with_dates": 656,
     "date_range_days": 43,
-    "articles_per_day": 15.14,
+    "articles_per_day": 15.26,
     "start_date": "2025-10-30T04:36:33",
-    "end_date": "2025-12-12T08:08:00"
+    "end_date": "2025-12-12T20:08:00"
   },
   "overall_quality": {
-    "score": 89.1,
+    "score": 75.5,
     "rating": "\u2705 GOOD",
     "component_scores": {
       "data_completeness": 100.0,
-      "sentiment_balance": 87.2,
-      "topic_quality": 64.1,
+      "sentiment_balance": 87.6,
+      "topic_quality": 9.5,
       "summarization": 100.0
     }
   }
