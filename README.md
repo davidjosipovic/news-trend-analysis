@@ -38,6 +38,11 @@
 - ⚡ **Automated Pipeline**: GitHub Actions runs twice daily (8:00 & 20:00 UTC)
 - 🎯 **Quality Filtering**: Removes paid content and short articles (< 200 words)
 - 🔄 **Duplicate Detection**: Smart handling of cross-source articles
+- 🔮 **Predictive Analytics** (NEW):
+  - **Weekly Forecasting**: Elastic Net + XGBoost for sentiment/volume predictions
+  - **Spike Detection**: ML-based anomaly detection with SMOTE balancing
+  - **Feature Engineering**: Lag, rolling, calendar, and trend features
+  - **REST API**: FastAPI endpoints for predictions
 
 ## 🚀 Live Demo
 
@@ -63,7 +68,9 @@
 |----------|-------------|
 | **Language** | Python 3.11+ |
 | **NLP Models** | Transformers (FinBERT, DistilBART), BERTopic, Sentence-Transformers |
+| **Predictive ML** | XGBoost, Elastic Net, SMOTE (imbalanced-learn), Optuna |
 | **Dashboard** | Streamlit, Plotly |
+| **API** | FastAPI, Pydantic |
 | **Deployment** | Railway (dashboard), GitHub Actions (pipeline) |
 | **Data Source** | NewsData.io API |
 | **Web Scraping** | Newspaper3k, BeautifulSoup |
@@ -158,7 +165,29 @@ news-trend-analysis/
 │   └── evaluate_pipeline.py         # Quality metrics & reporting
 │
 ├── 📂 dashboard/
-│   └── streamlit_app.py             # Interactive Streamlit dashboard
+│   ├── streamlit_app.py             # Interactive Streamlit dashboard
+│   └── predictive_components.py     # Predictive analytics UI components
+│
+├── 📂 features/                     # Feature engineering module
+│   └── time_features.py             # Time series feature generation
+│
+├── 📂 models/
+│   ├── topic_model/                 # Saved BERTopic models
+│   └── predictive/                  # Predictive ML models
+│       ├── weekly_forecaster.py     # Elastic Net + XGBoost forecaster
+│       ├── spike_detector.py        # Anomaly/spike detection
+│       └── model_trainer.py         # Unified training pipeline
+│
+├── 📂 api/
+│   └── prediction_api.py            # FastAPI REST endpoints
+│
+├── 📂 config/
+│   └── config.yaml                  # Centralized configuration
+│
+├── 📂 tests/                        # Test suite
+│   ├── test_features.py             # Feature engineering tests
+│   ├── test_models.py               # Model tests
+│   └── test_api.py                  # API integration tests
 │
 ├── 📂 data/
 │   ├── raw/                         # Raw JSON from API
@@ -169,9 +198,6 @@ news-trend-analysis/
 │       ├── articles_with_sentiment.csv
 │       ├── articles_with_topics.csv
 │       └── articles_with_summary.csv
-│
-├── 📂 models/
-│   └── topic_model/                 # Saved BERTopic models
 │
 ├── 📂 .github/workflows/
 │   └── daily-update.yml             # Automated pipeline (2x daily)
@@ -355,6 +381,150 @@ Topic Quality Score: 100/100
 - **Sustainability** emerging as major economic theme
 - **Inflation concerns** persist across multiple articles
 - **Tourism sector** showing recovery signals
+
+## 🔮 Predictive Analytics
+
+### Overview
+
+The predictive analytics module provides ML-based forecasting capabilities:
+
+| Feature | Description |
+|---------|-------------|
+| **Weekly Forecaster** | Predicts avg sentiment and article volume 7 days ahead |
+| **Spike Detector** | Identifies anomalous news activity with probability scores |
+| **Feature Engineering** | Automated time series feature generation |
+| **REST API** | FastAPI endpoints for programmatic access |
+
+### Models
+
+#### 1. Weekly Forecaster (Dual-Model Approach)
+- **Elastic Net** (interpretable baseline): Linear model with L1+L2 regularization
+- **XGBoost** (high accuracy): Gradient boosting for complex patterns
+- **Targets**: `avg_sentiment` and `total_articles`
+- **Horizon**: 7 days
+
+#### 2. Spike Detector
+- **Algorithm**: XGBoost Classifier
+- **SMOTE Balancing**: Handles class imbalance (spikes are rare)
+- **Definition**: volume > mean + 2σ OR sentiment_change > 0.5
+- **Output**: Probability (0-1) + Risk level (MINIMAL/LOW/MEDIUM/HIGH)
+
+### Feature Engineering
+
+Automatically generates 50+ features from daily aggregates:
+
+| Category | Features |
+|----------|----------|
+| **Lag Features** | 1, 2, 3, 7, 14 day lags for sentiment/volume |
+| **Rolling Features** | Mean, std, min, max over 3, 7, 14, 30 day windows |
+| **Calendar Features** | Day of week, weekend, month, Croatian holidays |
+| **Trend Features** | Momentum, acceleration, trend direction |
+
+### API Endpoints
+
+```bash
+# Weekly predictions
+GET /api/predictions/weekly
+
+# Spike probability
+GET /api/predictions/spike-probability
+
+# Trend analysis
+GET /api/analytics/trends?period=30
+
+# Daily aggregates
+GET /api/data/daily-aggregates?days=7
+
+# Retrain models (protected)
+POST /api/models/retrain
+```
+
+**Start API Server:**
+```bash
+uvicorn api.prediction_api:app --reload --port 8000
+```
+
+### Training Pipeline
+
+```python
+from models.predictive.model_trainer import ModelTrainer
+from features.time_features import TimeSeriesFeatureEngineer
+import pandas as pd
+
+# Load data
+df = pd.read_csv('data/processed/articles_with_sentiment.csv')
+
+# Generate features
+engineer = TimeSeriesFeatureEngineer()
+features_df = engineer.create_all_features(df)
+
+# Train all models
+trainer = ModelTrainer(n_splits=5, use_optuna=True)
+results = trainer.train_all_models(features_df)
+
+# Save models
+trainer.save_models('models/predictive/')
+```
+
+### Time Series Validation
+
+Uses **walk-forward validation** (TimeSeriesSplit) instead of random split:
+
+```
+Training: [████████████░░░░] → Test: [░░░░]
+Training: [████████████████░░░░] → Test: [░░░░]
+Training: [████████████████████░░░░] → Test: [░░░░]
+```
+
+This prevents data leakage from future observations.
+
+### Dashboard Integration
+
+The Streamlit dashboard includes a **Predictive Analytics** tab with:
+- 📊 Predicted vs Actual charts
+- 🔔 Spike probability gauge
+- 📈 Feature importance visualization
+- ⚠️ Real-time spike alerts
+
+### Configuration
+
+All hyperparameters in `config/config.yaml`:
+
+```yaml
+models:
+  weekly_forecaster:
+    forecast_horizon: 7
+    elastic_net:
+      alpha: 1.0
+      l1_ratio: 0.5
+    xgboost:
+      n_estimators: 100
+      max_depth: 6
+      learning_rate: 0.1
+  
+  spike_detector:
+    volume_std_threshold: 2.0
+    sentiment_change_threshold: 0.5
+    use_smote: true
+```
+
+## 🧪 Testing
+
+Run the test suite:
+
+```bash
+# All tests
+pytest tests/ -v
+
+# Feature engineering tests
+pytest tests/test_features.py -v
+
+# Model tests
+pytest tests/test_models.py -v
+
+# API integration tests
+pytest tests/test_api.py -v
+```
 
 ## 🤝 Contributing
 
