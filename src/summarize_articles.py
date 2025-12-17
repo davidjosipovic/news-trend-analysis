@@ -30,44 +30,41 @@ def summarize_articles():
     print(f"Loading articles from {input_path}...")
     df = pd.read_csv(input_path)
     
+    # Initialize summary column
+    df['summary'] = ''
+    
     # Check if we have existing summaries for incremental processing
     summary_path = "data/processed/articles_with_summary.csv"
     if os.path.exists(summary_path):
         print(f"Loading existing summaries from {summary_path}...")
         df_existing = pd.read_csv(summary_path)
         
-        # Identify NEW articles (not in existing file) using title + publishedAt
-        if 'title' in df.columns and 'publishedAt' in df.columns:
+        # Identify NEW articles (not in existing file) using title + publishedAt + source
+        if 'title' in df.columns and 'publishedAt' in df.columns and 'source' in df.columns:
             # Create unique identifier for each article
-            df['_article_id'] = df['title'].astype(str) + '||' + df['publishedAt'].astype(str)
-            df_existing['_article_id'] = df_existing['title'].astype(str) + '||' + df_existing['publishedAt'].astype(str)
+            df['_article_id'] = df['title'].astype(str) + '||' + df['publishedAt'].astype(str) + '||' + df['source'].astype(str)
+            df_existing['_article_id'] = df_existing['title'].astype(str) + '||' + df_existing['publishedAt'].astype(str) + '||' + df_existing['source'].astype(str)
             
-            existing_ids = set(df_existing['_article_id'].values)
-            new_articles_mask = ~df['_article_id'].isin(existing_ids)
-            new_articles = df[new_articles_mask].copy()
-            print(f"Found {len(new_articles)} new articles to summarize (out of {len(df)} total)")
+            # Create a mapping of existing summaries
+            existing_summary_map = dict(zip(df_existing['_article_id'], df_existing['summary']))
             
-            # Only process truly new articles
-            df_to_summarize = new_articles
+            # Copy existing summaries to the main dataframe
+            for idx, row in df.iterrows():
+                article_id = row['_article_id']
+                if article_id in existing_summary_map:
+                    df.loc[idx, 'summary'] = existing_summary_map[article_id]
             
-            # For existing articles, merge their summaries from the existing file
-            if len(df_to_summarize) < len(df):
-                existing_summaries = df_existing[['_article_id', 'summary']].copy()
-                df = df.merge(existing_summaries, on='_article_id', how='left', suffixes=('', '_prev'))
-                
-                # Keep previous summaries where they exist
-                if 'summary_prev' in df.columns:
-                    df['summary'] = df['summary_prev']
-                    df = df.drop('summary_prev', axis=1)
+            # Find articles that need summarization (no existing summary)
+            new_articles_mask = df['summary'].isna() | (df['summary'] == '')
+            df_to_summarize = df[new_articles_mask].copy()
+            print(f"Found {len(df_to_summarize)} new articles to summarize (out of {len(df)} total)")
             
         else:
-            print("⚠️  No 'title' or 'publishedAt' column found - processing all articles")
+            print("⚠️  No 'title', 'publishedAt' or 'source' column found - processing all articles")
             df_to_summarize = df.copy()
     else:
         print("No existing summary file found - processing all articles")
         df_to_summarize = df.copy()
-        # Initialize summary column
-        df['summary'] = ''
 
     # Prepare texts for batch processing
     print("Generating summaries with batch processing...")

@@ -1,18 +1,18 @@
 ============================================================
 NLP Pipeline Evaluation Report
 ============================================================
-Generated: 2025-12-16 14:27:12
+Generated: 2025-12-17 11:11:35
 
-Overall Quality Score: 89.0/100
-Rating: ✅ GOOD
+Overall Quality Score: 71.3/100
+Rating: ⚠️  ACCEPTABLE
 
 {
   "data_quality": {
-    "total_articles": 792,
-    "complete_articles": 792,
-    "completeness_rate": 100.0,
-    "avg_text_length": 4665.0,
-    "avg_word_count": 741.0,
+    "total_articles": 1279,
+    "complete_articles": 1266,
+    "completeness_rate": 98.98,
+    "avg_text_length": 4173.0,
+    "avg_word_count": 668.0,
     "text_length_range": [
       578,
       238565
@@ -20,33 +20,33 @@ Rating: ✅ GOOD
   },
   "sentiment": {
     "distribution": {
-      "neutral": 344,
-      "positive": 312,
-      "negative": 136
+      "neutral": 589,
+      "positive": 509,
+      "negative": 181
     },
     "percentages": {
-      "neutral": 43.4,
-      "positive": 39.4,
-      "negative": 17.2
+      "neutral": 46.1,
+      "positive": 39.8,
+      "negative": 14.2
     },
-    "imbalance_ratio": 2.52
+    "imbalance_ratio": 3.25
   },
   "topics": {
-    "num_topics": 103,
-    "outlier_count": 124,
-    "outlier_rate": 15.66,
-    "avg_topic_size": 6.5,
+    "num_topics": 99,
+    "outlier_count": 159,
+    "outlier_rate": 12.43,
+    "avg_topic_size": 11.3,
     "topic_size_range": [
       2,
-      24
+      68
     ],
     "coherence_proxy": 100.0
   },
   "summarization": {
-    "coverage": 100.0,
-    "avg_summary_length": 310.0,
-    "avg_summary_words": 53.0,
-    "avg_compression_ratio": 15.25,
+    "coverage": 98.98,
+    "avg_summary_length": 305.0,
+    "avg_summary_words": 51.0,
+    "avg_compression_ratio": 13.77,
     "summary_length_range": [
       129,
       604
@@ -57,20 +57,20 @@ Rating: ✅ GOOD
     }
   },
   "temporal": {
-    "articles_with_dates": 792,
-    "date_range_days": 46,
-    "articles_per_day": 17.22,
+    "articles_with_dates": 1279,
+    "date_range_days": 47,
+    "articles_per_day": 27.21,
     "start_date": "2025-10-30T04:36:33",
-    "end_date": "2025-12-15T20:09:00"
+    "end_date": "2025-12-16T22:10:00"
   },
   "overall_quality": {
-    "score": 89.0,
-    "rating": "\u2705 GOOD",
+    "score": 71.3,
+    "rating": "\u26a0\ufe0f  ACCEPTABLE",
     "component_scores": {
-      "data_completeness": 100.0,
-      "sentiment_balance": 84.8,
-      "topic_quality": 65.0,
-      "summarization": 100.0
+      "data_completeness": 99.0,
+      "sentiment_balance": 77.5,
+      "topic_quality": 0,
+      "summarization": 100
     }
   }
 }

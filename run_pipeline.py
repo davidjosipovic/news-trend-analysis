@@ -7,6 +7,15 @@ Runs all steps from fetching articles to generating summaries and dashboard-read
 import os
 import sys
 import subprocess
+from pathlib import Path
+
+# Load .env file before anything else
+try:
+    from dotenv import load_dotenv
+    env_path = Path(__file__).parent / '.env'
+    load_dotenv(dotenv_path=env_path)
+except ImportError:
+    pass
 
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
