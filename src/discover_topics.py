@@ -1,7 +1,8 @@
 import pandas as pd
 from bertopic import BERTopic
-from bertopic.representation import KeyBERTInspired
+from bertopic.representation import KeyBERTInspired, MaximalMarginalRelevance
 from sentence_transformers import SentenceTransformer
+from sklearn.feature_extraction.text import CountVectorizer
 import os
 import torch
 
@@ -38,18 +39,37 @@ def discover_topics(input_file='data/processed/articles_with_sentiment.csv', out
     # Enable multi-process encoding for faster CPU processing
     embedding_model.encode(["test"], show_progress_bar=False)  # Warm up
     
-    # Create automatic topic labeling representation
-    print("Setting up automatic topic labeling...")
-    representation_model = KeyBERTInspired()
+    # Configure CountVectorizer with n-grams (unigrams, bigrams, trigrams)
+    print("Setting up vectorizer with n-grams (1-3)...")
+    vectorizer_model = CountVectorizer(
+        ngram_range=(1, 3),          # Use unigrams, bigrams, and trigrams
+        stop_words='english',         # Remove English stop words
+        min_df=2,                     # Minimum document frequency
+        max_df=0.95,                  # Maximum document frequency (remove too common terms)
+        max_features=10000            # Limit vocabulary size for efficiency
+    )
     
-    # Initialize BERTopic with automatic labeling
-    print("Initializing BERTopic...")
+    # Create representation models for better topic labels
+    # KeyBERTInspired extracts keywords using cosine similarity
+    # MaximalMarginalRelevance ensures diversity in topic words
+    print("Setting up automatic topic labeling with diversity...")
+    representation_models = [
+        KeyBERTInspired(top_n_words=15),
+        MaximalMarginalRelevance(diversity=0.3)  # 0.3 = moderate diversity
+    ]
+    
+    # Initialize BERTopic with improved configuration
+    print("Initializing BERTopic with n-gram support...")
     topic_model = BERTopic(
         embedding_model=embedding_model,
-        representation_model=representation_model,
+        vectorizer_model=vectorizer_model,           # N-gram support
+        representation_model=representation_models,   # Better topic labels
         language='english',
         verbose=True,
-        min_topic_size=2  # Minimum 2 documents per topic
+        min_topic_size=3,              # Minimum 3 documents per topic (more coherent)
+        nr_topics='auto',              # Automatically reduce topics if too many
+        top_n_words=10,                # Top 10 words per topic
+        calculate_probabilities=True   # Enable soft clustering
     )
     
     # Fit the model

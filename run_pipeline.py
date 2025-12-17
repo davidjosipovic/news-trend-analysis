@@ -28,14 +28,14 @@ from summarize_articles import summarize_articles
 from evaluate_pipeline import evaluate_pipeline
 
 def main():
-    """Run the complete 7-step pipeline with evaluation."""
+    """Run the complete 8-step pipeline with evaluation and predictive models."""
     
     print("=" * 60)
     print("📰 News Trend Analysis Pipeline")
     print("=" * 60)
     
     # Step 1: Fetch news articles
-    print("\n[1/7] 🔍 Fetching latest news articles from NewsData.io (all topics)...")
+    print("\n[1/8] 🔍 Fetching latest news articles from NewsData.io (all topics)...")
     print("-" * 60)
     
     api_key = os.environ.get('NEWS_API_KEY', 'your_api_key_here')
@@ -58,7 +58,7 @@ def main():
             return
     
     # Step 2: Scrape full article content
-    print("\n[2/7] 🕷️  Scraping full article content from websites...")
+    print("\n[2/8] 🕷️  Scraping full article content from websites...")
     print("-" * 60)
     try:
         result = subprocess.run(['python3', 'src/scrape_articles.py'], 
@@ -74,7 +74,7 @@ def main():
         print(f"⚠️  Scraping error: {e}. Continuing with API data...")
     
     # Step 3: Preprocess and clean articles
-    print("\n[3/7] 🧹 Preprocessing and cleaning articles...")
+    print("\n[3/8] 🧹 Preprocessing and cleaning articles...")
     print("-" * 60)
     try:
         df = clean_articles()
@@ -88,7 +88,7 @@ def main():
         return
     
     # Step 4: Sentiment analysis
-    print("\n[4/7] 😊 Analyzing sentiment...")
+    print("\n[4/8] 😊 Analyzing sentiment...")
     print("-" * 60)
     try:
         # Auto-detect and use adapter if available
@@ -105,7 +105,7 @@ def main():
         return
     
     # Step 5: Topic modeling
-    print("\n[5/7] 🏷️  Discovering topics with BERTopic...")
+    print("\n[5/8] 🏷️  Discovering topics with BERTopic...")
     print("-" * 60)
     try:
         discover_topics()
@@ -115,7 +115,7 @@ def main():
         return
     
     # Step 6: Generate summaries
-    print("\n[6/7] 📝 Generating summaries with DistilBART...")
+    print("\n[6/8] 📝 Generating summaries with DistilBART...")
     print("-" * 60)
     try:
         summarize_articles()
@@ -124,8 +124,55 @@ def main():
         print(f"❌ Error during summarization: {e}")
         return
     
-    # Step 7: Evaluate pipeline quality
-    print("\n[7/7] 📊 Evaluating pipeline quality...")
+    # Step 7: Train predictive models
+    print("\n[7/8] 🔮 Training predictive models...")
+    print("-" * 60)
+    try:
+        from features.time_features import TimeSeriesFeatureEngineer
+        from models.predictive.model_trainer import ModelTrainer
+        import pandas as pd
+        
+        # Load sentiment data
+        df = pd.read_csv('data/processed/articles_with_sentiment.csv')
+        
+        # Check if we have enough data (at least 14 days)
+        if 'publishedAt' in df.columns:
+            df['publishedAt'] = pd.to_datetime(df['publishedAt'])
+            n_days = (df['publishedAt'].max() - df['publishedAt'].min()).days
+            
+            if n_days >= 14:
+                # Create features
+                engineer = TimeSeriesFeatureEngineer(random_seed=42)
+                features_df = engineer.create_all_features(df)
+                
+                # Train models
+                trainer = ModelTrainer(
+                    n_splits=3,           # 3-fold for faster training
+                    test_size=0.2,
+                    random_seed=42,
+                    use_optuna=False
+                )
+                results = trainer.train_all_models(features_df)
+                
+                # Save models
+                save_path = 'models/predictive/'
+                os.makedirs(save_path, exist_ok=True)
+                trainer.save_models(save_path)
+                print(f"✅ Predictive models trained and saved to {save_path}")
+            else:
+                print(f"⚠️  Only {n_days} days of data. Need 14+ days for predictive models.")
+                print("   Skipping predictive model training...")
+        else:
+            print("⚠️  No publishedAt column found. Skipping predictive models...")
+    except ImportError as e:
+        print(f"⚠️  Predictive analytics dependencies not installed: {e}")
+        print("   Install with: pip install xgboost imbalanced-learn optuna")
+    except Exception as e:
+        print(f"⚠️  Predictive model training failed: {e}")
+        print("   Pipeline will continue without predictive models...")
+    
+    # Step 8: Evaluate pipeline quality
+    print("\n[8/8] 📊 Evaluating pipeline quality...")
     print("-" * 60)
     try:
         evaluation_results = evaluate_pipeline()
@@ -143,6 +190,7 @@ def main():
     print("   • data/processed/articles_with_sentiment.csv")
     print("   • data/processed/articles_with_topics.csv")
     print("   • data/processed/articles_with_summary.csv")
+    print("   • models/predictive/ (if enough data)")
     print("   • data/evaluation/evaluation_report.json")
     print("   • data/evaluation/evaluation_report.txt")
     print("\n🚀 Next steps:")
