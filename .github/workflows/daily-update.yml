@@ -22,10 +22,18 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
       
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          df -h
+      
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.full.txt
+          # Install CPU-only PyTorch first (saves ~3GB vs CUDA version)
+          pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+          # Install remaining dependencies
+          pip install --no-cache-dir -r requirements.full.txt
       
       - name: Run daily update pipeline
         env:
