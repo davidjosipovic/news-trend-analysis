@@ -193,10 +193,16 @@ def clean_articles(input_file='data/raw/articles_scraped.json', output_file='dat
     
     # Load existing articles if in incremental mode
     existing_df = pd.DataFrame()
+    existing_keys = set()
     if incremental and Path(output_file).exists():
         print(f"Loading existing articles from {output_file}...")
         existing_df = pd.read_csv(output_file)
         print(f"Found {len(existing_df)} existing articles")
+        # Create set of existing keys for fast lookup
+        existing_keys = set(
+            (str(row['title']), str(row['publishedAt']), str(row['source']))
+            for _, row in existing_df.iterrows()
+        )
     
     # Load JSON data
     with open(input_file, 'r', encoding='utf-8') as f:
@@ -208,14 +214,23 @@ def clean_articles(input_file='data/raw/articles_scraped.json', output_file='dat
     else:
         articles = data.get('articles', [])
     
-    # Process each article
+    # Process each article - skip ones already in existing_df
     processed_articles = []
     skipped_paid = 0
     skipped_short = 0
+    skipped_existing = 0
     
     for article in articles:
         # Get title and text
         title = article.get('title', '') or ''
+        publishedAt = article.get('publishedAt', '')
+        source = article.get('source', {})
+        source_name = source.get('name', '') if isinstance(source, dict) else source
+        
+        # Skip if already processed (in incremental mode)
+        if existing_keys and (str(title), str(publishedAt), str(source_name)) in existing_keys:
+            skipped_existing += 1
+            continue
         
         # Try 'text' field first (scraped content), then fallback to description+content (API)
         text = article.get('text', '')
@@ -245,22 +260,28 @@ def clean_articles(input_file='data/raw/articles_scraped.json', output_file='dat
             processed_articles.append({
                 'title': title,
                 'text': clean_text,
-                'publishedAt': article.get('publishedAt', ''),
-                'source': article.get('source', {}).get('name', '') if isinstance(article.get('source'), dict) else article.get('source', '')
+                'publishedAt': publishedAt,
+                'source': source_name
             })
         else:
             skipped_short += 1
     
-    # Create DataFrame
+    # Create DataFrame from NEW articles only
     df = pd.DataFrame(processed_articles)
     
-    # Merge with existing articles if incremental mode
-    if incremental and not existing_df.empty:
-        print(f"Merging {len(df)} new articles with {len(existing_df)} existing articles...")
-        df = pd.concat([existing_df, df], ignore_index=True)
+    # Log skipped existing articles
+    if skipped_existing > 0:
+        print(f"Skipped {skipped_existing} articles already in database")
     
-    # Remove exact duplicates (same title + publishedAt + source) - these are true duplicates
-    # But KEEP articles with same title from different sources - these are news spread
+    # Merge with existing articles if incremental mode and we have new articles
+    if incremental and not existing_df.empty and not df.empty:
+        print(f"Adding {len(df)} NEW articles to {len(existing_df)} existing articles...")
+        df = pd.concat([existing_df, df], ignore_index=True)
+    elif incremental and not existing_df.empty and df.empty:
+        print(f"No new articles to add. Keeping {len(existing_df)} existing articles.")
+        df = existing_df
+    
+    # Remove exact duplicates (same title + publishedAt + source) - safety check
     initial_count = len(df)
     df = df.drop_duplicates(subset=['title', 'publishedAt', 'source'], keep='last')
     exact_duplicates_removed = initial_count - len(df)
