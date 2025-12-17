@@ -63,23 +63,26 @@ class SentimentClassifier:
         self.class_distribution: Dict[str, float] = {}
         
         # Try XGBoost first, fallback to RandomForest
+        # Using balanced class weights to handle imbalanced data
         try:
             from xgboost import XGBClassifier
             self.model = XGBClassifier(
-                n_estimators=100,
-                max_depth=4,
-                learning_rate=0.1,
+                n_estimators=150,
+                max_depth=3,              # Reduced to prevent overfitting to majority class
+                learning_rate=0.05,       # Lower learning rate for better generalization
                 random_state=random_seed,
-                use_label_encoder=False,
-                eval_metric='mlogloss'
+                eval_metric='mlogloss',
+                reg_alpha=0.1,            # L1 regularization
+                reg_lambda=1.0            # L2 regularization
             )
-            logger.info("Using XGBoost Classifier")
+            logger.info("Using XGBoost Classifier with balanced weights")
         except ImportError:
             from sklearn.ensemble import RandomForestClassifier
             self.model = RandomForestClassifier(
-                n_estimators=100,
-                max_depth=4,
-                random_state=random_seed
+                n_estimators=150,
+                max_depth=3,
+                random_state=random_seed,
+                class_weight='balanced'   # Auto-balance class weights
             )
             logger.info("Using RandomForest Classifier (XGBoost not available)")
     
@@ -146,13 +149,32 @@ class SentimentClassifier:
         daily['negative_pct'] = daily['negative_count'] / total
         daily['neutral_pct'] = daily['neutral_count'] / total
         
-        # Determine dominant sentiment (target variable)
-        daily['dominant_sentiment'] = daily.apply(
-            lambda row: 'positive' if row['positive_count'] > row['negative_count'] and row['positive_count'] > row['neutral_count']
-                       else ('negative' if row['negative_count'] > row['positive_count'] and row['negative_count'] > row['neutral_count']
-                             else 'neutral'),
-            axis=1
+        # Calculate sentiment score (weighted average: pos=1, neu=0, neg=-1)
+        daily['sentiment_score'] = (
+            daily['positive_pct'] * 1.0 + 
+            daily['neutral_pct'] * 0.0 + 
+            daily['negative_pct'] * -1.0
         )
+        
+        # Determine dominant sentiment using balanced thresholds
+        # Based on actual sentiment score (pos - neg ratio)
+        def get_dominant(row):
+            score = row['sentiment_score']
+            pos_pct = row['positive_pct']
+            neg_pct = row['negative_pct']
+            neu_pct = row['neutral_pct']
+            
+            # Positive: score > 0.25 AND positive is highest or close to highest
+            if score > 0.25 and pos_pct >= neu_pct * 0.8:
+                return 'positive'
+            # Negative: score < -0.08 OR negative proportion is high
+            elif score < -0.08 or neg_pct > 0.28:
+                return 'negative'
+            # Neutral: default when mixed or balanced
+            else:
+                return 'neutral'
+        
+        daily['dominant_sentiment'] = daily.apply(get_dominant, axis=1)
         
         # Store class distribution
         self.class_distribution = daily['dominant_sentiment'].value_counts(normalize=True).to_dict()
@@ -220,6 +242,8 @@ class SentimentClassifier:
         Returns:
             Dictionary with training metrics
         """
+        from sklearn.utils.class_weight import compute_sample_weight
+        
         feature_cols = self.get_feature_columns()
         available_cols = [c for c in feature_cols if c in daily_df.columns]
         
@@ -235,19 +259,24 @@ class SentimentClassifier:
         # Encode labels
         y_encoded = self.label_encoder.fit_transform(y)
         
+        # Compute sample weights to balance classes
+        sample_weights = compute_sample_weight('balanced', y_encoded)
+        
         # Time-based split (80/20)
         split_idx = int(len(X) * 0.8)
         X_train, X_test = X.iloc[:split_idx], X.iloc[split_idx:]
         y_train, y_test = y_encoded[:split_idx], y_encoded[split_idx:]
+        weights_train = sample_weights[:split_idx]
         
         logger.info(f"Training on {len(X_train)} days, testing on {len(X_test)} days")
+        logger.info(f"Train class distribution: {dict(zip(*np.unique(y_train, return_counts=True)))}")
         
         # Scale features
         X_train_scaled = self.scaler.fit_transform(X_train)
         X_test_scaled = self.scaler.transform(X_test)
         
-        # Train model
-        self.model.fit(X_train_scaled, y_train)
+        # Train model with sample weights
+        self.model.fit(X_train_scaled, y_train, sample_weight=weights_train)
         self.is_fitted = True
         
         # Evaluate
