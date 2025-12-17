@@ -57,7 +57,10 @@ jobs:
           echo "Step 6: Summarization..."
           python src/summarize_articles.py
           
-          echo "Step 7: Evaluation..."
+          echo "Step 7: Predictive model training..."
+          python train_models.py || echo "⚠️ Predictive training skipped (may need more data)"
+          
+          echo "Step 8: Evaluation..."
           python src/evaluate_pipeline.py
           
           echo "✅ Pipeline complete!"
