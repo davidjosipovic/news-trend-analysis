@@ -1,18 +1,18 @@
 ============================================================
 NLP Pipeline Evaluation Report
 ============================================================
-Generated: 2025-12-19 08:13:42
+Generated: 2025-12-19 20:08:36
 
 Overall Quality Score: 72.6/100
 Rating: ⚠️  ACCEPTABLE
 
 {
   "data_quality": {
-    "total_articles": 860,
-    "complete_articles": 860,
+    "total_articles": 865,
+    "complete_articles": 865,
     "completeness_rate": 100.0,
-    "avg_text_length": 4660.0,
-    "avg_word_count": 741.0,
+    "avg_text_length": 4647.0,
+    "avg_word_count": 739.0,
     "text_length_range": [
       578,
       238565
@@ -20,25 +20,25 @@ Rating: ⚠️  ACCEPTABLE
   },
   "sentiment": {
     "distribution": {
-      "neutral": 378,
-      "positive": 335,
-      "negative": 147
+      "neutral": 381,
+      "positive": 336,
+      "negative": 148
     },
     "percentages": {
       "neutral": 44.0,
-      "positive": 39.0,
+      "positive": 38.8,
       "negative": 17.1
     },
     "imbalance_ratio": 2.57
   },
   "topics": {
-    "num_topics": 32,
-    "outlier_count": 165,
-    "outlier_rate": 19.19,
-    "avg_topic_size": 21.7,
+    "num_topics": 35,
+    "outlier_count": 179,
+    "outlier_rate": 20.69,
+    "avg_topic_size": 19.6,
     "topic_size_range": [
       3,
-      451
+      278
     ],
     "coherence_proxy": 100.0
   },
@@ -46,7 +46,7 @@ Rating: ⚠️  ACCEPTABLE
     "coverage": 100.0,
     "avg_summary_length": 311.0,
     "avg_summary_words": 53.0,
-    "avg_compression_ratio": 15.28,
+    "avg_compression_ratio": 15.23,
     "summary_length_range": [
       129,
       604
@@ -57,11 +57,11 @@ Rating: ⚠️  ACCEPTABLE
     }
   },
   "temporal": {
-    "articles_with_dates": 860,
-    "date_range_days": 49,
-    "articles_per_day": 17.55,
+    "articles_with_dates": 865,
+    "date_range_days": 50,
+    "articles_per_day": 17.3,
     "start_date": "2025-10-30T04:36:33",
-    "end_date": "2025-12-18T20:09:00"
+    "end_date": "2025-12-19T08:05:00"
   },
   "overall_quality": {
     "score": 72.6,
