@@ -19,7 +19,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-
+*.ipynb
 # Virtual Environment
 .venv/
 venv/

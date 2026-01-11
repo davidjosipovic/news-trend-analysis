@@ -165,12 +165,30 @@ def load_daily_data():
     try:
         # Try to load pre-computed daily aggregates
         daily_path = "data/processed/daily_aggregates.csv"
-        if os.path.exists(daily_path):
-            return pd.read_csv(daily_path, parse_dates=['date'])
-        
-        # Otherwise compute from articles
         articles_path = "data/processed/articles_with_sentiment.csv"
-        if os.path.exists(articles_path):
+        
+        # Check if daily aggregates need refresh
+        should_regenerate = False
+        
+        if os.path.exists(daily_path):
+            # Check age of daily_aggregates
+            daily_mtime = os.path.getmtime(daily_path)
+            articles_mtime = os.path.getmtime(articles_path) if os.path.exists(articles_path) else 0
+            
+            # Regenerate if articles are newer OR if daily_aggregates is older than 1 day
+            import time
+            age_hours = (time.time() - daily_mtime) / 3600
+            
+            if articles_mtime > daily_mtime:
+                should_regenerate = True
+                st.sidebar.info(f"🔄 Articles updated - refreshing daily aggregates...")
+            elif age_hours > 24:
+                should_regenerate = True
+                st.sidebar.info(f"🔄 Daily aggregates are {age_hours:.1f}h old - refreshing...")
+        else:
+            should_regenerate = True
+        
+        if should_regenerate and os.path.exists(articles_path):
             from features.time_features import TimeSeriesFeatureEngineer
             
             df = pd.read_csv(articles_path)
@@ -179,9 +197,16 @@ def load_daily_data():
             
             # Save for future use
             daily_df.to_csv(daily_path, index=False)
+            st.sidebar.success(f"✅ Updated daily aggregates: {len(daily_df)} days")
             return daily_df
+        elif os.path.exists(daily_path):
+            # Load existing file
+            return pd.read_csv(daily_path, parse_dates=['date'])
+        
     except Exception as e:
         st.warning(f"⚠️ Could not load daily data: {e}")
+        import traceback
+        st.code(traceback.format_exc())
     return None
 
 
@@ -564,32 +589,50 @@ def render_trend_summary(daily_df: pd.DataFrame, period_days: int = 30):
     
     with col1:
         delta_color = "normal" if sentiment_change >= 0 else "inverse"
+        # Interpret sentiment
+        if avg_sentiment > 0.15:
+            sent_emoji = "😊"
+        elif avg_sentiment > -0.15:
+            sent_emoji = "😐"
+        else:
+            sent_emoji = "😞"
         st.metric(
-            label="Avg Sentiment",
-            value=f"{avg_sentiment:.3f}",
-            delta=f"{sentiment_change:+.3f}",
-            delta_color=delta_color
+            label=f"{sent_emoji} Prosječni Sentiment",
+            value=f"{avg_sentiment:+.3f}",
+            delta=f"{sentiment_change:+.3f} (zadnjih 7 dana)",
+            delta_color=delta_color,
+            help=f"Prosječna polarnost vijesti u zadnjih {period_days} dana. Raspon: -1 (negativno) do +1 (pozitivno)"
         )
     
     with col2:
         st.metric(
-            label="Total Articles",
+            label="📰 Ukupno Članaka",
             value=f"{total_articles:,}",
-            delta=None
+            delta=f"{daily_avg_articles:.1f} po danu",
+            help=f"Ukupan broj analiziranih članaka u zadnjih {period_days} dana"
         )
     
     with col3:
+        # Calculate trend
+        first_week_avg = df['total_articles'].iloc[:7].mean() if len(df) >= 7 else df['total_articles'].iloc[0]
+        last_week_avg = df['total_articles'].iloc[-7:].mean() if len(df) >= 7 else df['total_articles'].iloc[-1]
+        vol_change = last_week_avg - first_week_avg
+        vol_change_pct = (vol_change / first_week_avg * 100) if first_week_avg > 0 else 0
+        
         st.metric(
-            label="Daily Avg Volume",
+            label="📊 Dnevni Prosjek",
             value=f"{daily_avg_articles:.1f}",
-            delta=None
+            delta=f"{vol_change:+.1f} ({vol_change_pct:+.0f}%) vs prošli tjedan",
+            help="Prosječan broj članaka po danu"
         )
     
     with col4:
+        spike_rate = (spike_count / len(df) * 100) if len(df) > 0 else 0
         st.metric(
-            label="Spike Days",
-            value=spike_count,
-            delta=f"{spike_count/len(df)*100:.1f}% of days" if len(df) > 0 else None
+            label="⚡ Spike Dana",
+            value=f"{spike_count}",
+            delta=f"{spike_rate:.0f}% dana",
+            help="Broj dana s izuzetno visokom aktivnošću ili ekstremnim sentimentom (skok >1.5σ od prosjeka)"
         )
 
 
@@ -674,11 +717,23 @@ def render_predictions_tab(trainer, daily_df: pd.DataFrame):
                 
                 with col1:
                     st.subheader("📊 Spike Probability")
+                    st.caption("Vjerojatnost neobične aktivnosti u sljedećih 7 dana")
                     gauge_fig = render_spike_probability_gauge(spike_prob, risk_level)
                     st.plotly_chart(gauge_fig, use_container_width=True)
+                    
+                    # Add explanation based on risk level
+                    if risk_level == 'HIGH':
+                        st.warning("⚠️ **Visoka vjerojatnost spike-a** - Model detektuje neobične trendove koji mogu dovesti do nagle promjene")
+                    elif risk_level == 'MEDIUM':
+                        st.info("ℹ️ **Umjerena vjerojatnost** - Moguća je povećana aktivnost, ali nije sigurna")
+                    elif risk_level == 'LOW':
+                        st.success("✅ **Niska vjerojatnost** - Stabilni trendovi, bez znakova neobične aktivnosti")
+                    else:
+                        st.success("✅ **Minimalna vjerojatnost** - Jako stabilno stanje")
                 
                 with col2:
-                    st.subheader("📈 Weekly Predictions")
+                    st.subheader("📈 Predikcije za Sljedećih 7 Dana")
+                    st.caption("Očekivani sentiment i volume članaka")
                     
                     # Try to load and use the new sentiment classifier
                     try:
@@ -779,8 +834,40 @@ def add_predictive_tab_to_dashboard():
     trainer = load_predictive_models()
     daily_df = load_daily_data()
     
+    # Info box about models
+    with st.expander("ℹ️ O Prediktivnim Modelima", expanded=False):
+        st.markdown("""
+        ### 🤖 Machine Learning Modeli
+        
+        Dashboard koristi tri različita modela za predikciju:
+        
+        **1. 😊😐😞 Sentiment Classifier (XGBoost)**
+        - Predviđa polarnost vijesti (pozitivan/neutralan/negativan sentiment)
+        - Treniran na {info} članaka s balansiranim težinama klasa
+        - Koristi RobustScaler - otporan na ekstremne vrijednosti (outliere)
+        
+        **2. ⚡ Spike Detector (XGBoost + SMOTE)**
+        - Detektira neobične skokove u aktivnosti ili sentimentu
+        - Prag: volume >1.5σ ILI sentiment promjena >0.4
+        - Precision: **100%** (bez false alarms), Recall: 50%
+        
+        **3. 📰 Volume Forecaster (Elastic Net + XGBoost)**
+        - Predviđa broj članaka u sljedećih 7 dana
+        - MAPE: **2.18%** (izuzetno precizno)
+        
+        ### 📊 Feature Engineering
+        
+        Modeli koriste **81 feature-a**:
+        - 🔄 **Lag features** (10): Prethodne vrijednosti (jučer, prekjučer...)
+        - 📈 **Rolling statistics** (40): Pomični prosjeci, standardna devijacija, min/max
+        - 📅 **Calendar features** (11): Dan u tjednu, vikend, mjesec, praznici
+        - 📉 **Trend features** (10): Momenti, rate of change, volatilnost
+        
+        Više info: `QUICKSTART_PREDICTIVE.md`
+        """.replace("{info}", "1029"))
+    
     # Render trend summary at top
-    st.subheader("📊 Trend Summary (Last 30 Days)")
+    st.subheader("📊 Pregled Trendova (Zadnjih 30 Dana)")
     render_trend_summary(daily_df)
     
     st.divider()

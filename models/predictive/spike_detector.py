@@ -39,10 +39,10 @@ class SpikeDetector:
     Binary classifier for detecting news spikes.
     
     A spike is defined as:
-    - Volume > mean + threshold * std, OR
-    - Absolute sentiment change > threshold
+    - Volume > mean + 1.5 * std (reduced from 2.0 for better sensitivity), OR
+    - Absolute sentiment change > 0.4 (reduced from 0.5)
     
-    Uses XGBoost Classifier with optional SMOTE for class balancing.
+    Uses XGBoost Classifier with SMOTE for class balancing (enabled by default).
     
     Attributes:
         volume_std_threshold: Std deviations for volume spike
@@ -58,8 +58,8 @@ class SpikeDetector:
     
     def __init__(
         self,
-        volume_std_threshold: float = 2.0,
-        sentiment_change_threshold: float = 0.5,
+        volume_std_threshold: float = 1.5,
+        sentiment_change_threshold: float = 0.4,
         use_smote: bool = True,
         random_seed: int = 42
     ):

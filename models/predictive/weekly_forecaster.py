@@ -20,7 +20,7 @@ import os
 from datetime import datetime
 
 from sklearn.linear_model import ElasticNet
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, RobustScaler
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 # Configure logging
@@ -89,8 +89,13 @@ class WeeklyForecaster:
         self.use_xgboost = use_xgboost
         self.random_seed = random_seed
         
-        # Initialize models
-        self.scaler = StandardScaler()
+        # Initialize scaler - RobustScaler for sentiment (resistant to outliers)
+        # StandardScaler for volume (more stable)
+        if target_type == 'sentiment':
+            self.scaler = RobustScaler()  # Less sensitive to outliers
+            logger.info("Using RobustScaler for sentiment (outlier-resistant)")
+        else:
+            self.scaler = StandardScaler()
         
         # Elastic Net (baseline)
         self.elastic_net_model = ElasticNet(

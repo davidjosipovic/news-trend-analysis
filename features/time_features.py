@@ -61,6 +61,8 @@ class TimeSeriesFeatureEngineer:
         self,
         lag_days: Optional[List[int]] = None,
         rolling_windows: Optional[List[int]] = None,
+        sentiment_clip_threshold: float = 0.6,
+        use_sentiment_smoothing: bool = True,
         random_seed: int = 42
     ):
         """
@@ -69,15 +71,19 @@ class TimeSeriesFeatureEngineer:
         Args:
             lag_days: Days for lag features. Default: [1, 2, 3, 7, 14]
             rolling_windows: Days for rolling windows. Default: [3, 7, 14, 30]
+            sentiment_clip_threshold: Max absolute sentiment value (outlier protection)
+            use_sentiment_smoothing: Apply exponential smoothing to sentiment
             random_seed: Random seed for reproducibility
         """
         self.lag_days = lag_days or [1, 2, 3, 7, 14]
         self.rolling_windows = rolling_windows or [3, 7, 14, 30]
+        self.sentiment_clip_threshold = sentiment_clip_threshold
+        self.use_sentiment_smoothing = use_sentiment_smoothing
         self.random_seed = random_seed
         np.random.seed(random_seed)
         
         logger.info(f"Initialized TimeSeriesFeatureEngineer with lag_days={self.lag_days}, "
-                   f"rolling_windows={self.rolling_windows}")
+                   f"rolling_windows={self.rolling_windows}, clip_threshold={sentiment_clip_threshold}")
     
     def aggregate_daily(self, df: pd.DataFrame, date_col: str = 'publishedAt') -> pd.DataFrame:
         """
@@ -141,6 +147,54 @@ class TimeSeriesFeatureEngineer:
         
         logger.info(f"Created daily aggregates with {len(daily_agg)} days")
         return daily_agg
+    
+    def smooth_sentiment(self, df: pd.DataFrame, alpha: float = 0.3) -> pd.DataFrame:
+        """
+        Apply exponential smoothing and outlier clipping to sentiment.
+        
+        This reduces the impact of extreme sentiment spikes on predictions
+        by smoothing the sentiment series and clipping outliers.
+        
+        Args:
+            df: DataFrame with 'avg_sentiment' column
+            alpha: Smoothing factor (0-1). Lower = more smoothing
+            
+        Returns:
+            DataFrame with smoothed sentiment
+        """
+        df = df.copy()
+        
+        if 'avg_sentiment' not in df.columns:
+            return df
+        
+        # Clip outliers first
+        df['avg_sentiment_raw'] = df['avg_sentiment'].copy()
+        df['avg_sentiment'] = df['avg_sentiment'].clip(
+            lower=-self.sentiment_clip_threshold,
+            upper=self.sentiment_clip_threshold
+        )
+        
+        # Apply exponential smoothing if enabled
+        if self.use_sentiment_smoothing:
+            smoothed = []
+            prev_smooth = df['avg_sentiment'].iloc[0]
+            
+            for val in df['avg_sentiment']:
+                # Exponential weighted moving average
+                smoothed_val = alpha * val + (1 - alpha) * prev_smooth
+                smoothed.append(smoothed_val)
+                prev_smooth = smoothed_val
+            
+            df['avg_sentiment_smoothed'] = smoothed
+            # Replace with smoothed values
+            df['avg_sentiment'] = df['avg_sentiment_smoothed']
+            
+            n_clipped = (df['avg_sentiment_raw'].abs() > self.sentiment_clip_threshold).sum()
+            if n_clipped > 0:
+                logger.info(f"Clipped {n_clipped} sentiment outliers beyond ±{self.sentiment_clip_threshold}"
+                           f" and applied exponential smoothing (alpha={alpha})")
+        
+        return df
     
     def create_lag_features(
         self, 
@@ -360,8 +414,8 @@ class TimeSeriesFeatureEngineer:
     def create_spike_labels(
         self, 
         df: pd.DataFrame, 
-        volume_std_threshold: float = 2.0,
-        sentiment_change_threshold: float = 0.5
+        volume_std_threshold: float = 1.5,
+        sentiment_change_threshold: float = 0.4
     ) -> pd.DataFrame:
         """
         Create spike labels for binary classification.
@@ -428,7 +482,7 @@ class TimeSeriesFeatureEngineer:
         if not is_aggregated:
             df = self.aggregate_daily(df, date_col=date_col)
         
-        # Step 2: Apply all feature engineering
+        # Step 2: Apply all feature engineering (no smoothing - keep raw data for visualization)
         df = self.create_lag_features(df)
         df = self.create_rolling_features(df)
         df = self.create_calendar_features(df)

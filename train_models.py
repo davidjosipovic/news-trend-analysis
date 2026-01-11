@@ -69,6 +69,11 @@ def main():
         print(f"   - Calendar features: {len(feature_names['calendar_features'])}")
         print(f"   - Trend features: {len(feature_names['trend_features'])}")
         
+        # Save daily aggregates for dashboard
+        daily_agg_path = 'data/processed/daily_aggregates.csv'
+        features_df.to_csv(daily_agg_path, index=False)
+        print(f"✅ Saved daily aggregates to {daily_agg_path}")
+        
     except Exception as e:
         print(f"❌ Feature engineering failed: {e}")
         return
