@@ -1,18 +1,18 @@
 ============================================================
 NLP Pipeline Evaluation Report
 ============================================================
-Generated: 2026-01-13 20:12:21
+Generated: 2026-01-14 08:15:25
 
 Overall Quality Score: 72.9/100
 Rating: ⚠️  ACCEPTABLE
 
 {
   "data_quality": {
-    "total_articles": 1258,
-    "complete_articles": 1258,
+    "total_articles": 1267,
+    "complete_articles": 1267,
     "completeness_rate": 100.0,
-    "avg_text_length": 4368.0,
-    "avg_word_count": 698.0,
+    "avg_text_length": 4361.0,
+    "avg_word_count": 696.0,
     "text_length_range": [
       578,
       238565
@@ -20,25 +20,25 @@ Rating: ⚠️  ACCEPTABLE
   },
   "sentiment": {
     "distribution": {
-      "neutral": 561,
-      "positive": 465,
-      "negative": 232
+      "neutral": 564,
+      "positive": 470,
+      "negative": 233
     },
     "percentages": {
-      "neutral": 44.6,
-      "positive": 37.0,
+      "neutral": 44.5,
+      "positive": 37.1,
       "negative": 18.4
     },
     "imbalance_ratio": 2.42
   },
   "topics": {
-    "num_topics": 66,
-    "outlier_count": 177,
-    "outlier_rate": 14.07,
-    "avg_topic_size": 16.4,
+    "num_topics": 39,
+    "outlier_count": 210,
+    "outlier_rate": 16.57,
+    "avg_topic_size": 27.1,
     "topic_size_range": [
-      4,
-      135
+      3,
+      769
     ],
     "coherence_proxy": 100.0
   },
@@ -46,7 +46,7 @@ Rating: ⚠️  ACCEPTABLE
     "coverage": 100.0,
     "avg_summary_length": 310.0,
     "avg_summary_words": 53.0,
-    "avg_compression_ratio": 14.44,
+    "avg_compression_ratio": 14.41,
     "summary_length_range": [
       129,
       604
@@ -57,11 +57,11 @@ Rating: ⚠️  ACCEPTABLE
     }
   },
   "temporal": {
-    "articles_with_dates": 1258,
+    "articles_with_dates": 1267,
     "date_range_days": 75,
-    "articles_per_day": 16.77,
+    "articles_per_day": 16.89,
     "start_date": "2025-10-30T04:36:33",
-    "end_date": "2026-01-13T08:06:00"
+    "end_date": "2026-01-13T20:10:00"
   },
   "overall_quality": {
     "score": 72.9,
