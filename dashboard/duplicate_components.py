@@ -106,11 +106,11 @@ def render_source_originality_chart(df: pd.DataFrame):
     source_stats['originality_rate'] = source_stats['original_count'] / source_stats['total_count']
     source_stats['copied_count'] = source_stats['total_count'] - source_stats['original_count']
     
-    # Filter to sources with at least 2 articles
-    source_stats = source_stats[source_stats['total_count'] >= 2]
+    # Filter to sources with at least 2 articles AND that have some copies
+    source_stats = source_stats[(source_stats['total_count'] >= 2) & (source_stats['copied_count'] > 0)]
     
-    # Sort by originality rate
-    source_stats = source_stats.sort_values('originality_rate', ascending=True).tail(15)
+    # Sort by copied_count descending to show biggest copiers, take top 15
+    source_stats = source_stats.sort_values('copied_count', ascending=True).tail(15)
     
     fig = go.Figure()
     
@@ -144,12 +144,17 @@ def render_source_originality_chart(df: pd.DataFrame):
 
 
 def render_similarity_distribution(df: pd.DataFrame):
-    """Render histogram of similarity scores."""
+    """Render histogram of similarity scores for duplicates/similar articles only."""
     if df is None or 'similarity_score' not in df.columns:
         return None
     
-    # Filter out zeros (first articles have 0 similarity)
-    scores = df[df['similarity_score'] > 0]['similarity_score']
+    # Filter to only non-original articles (duplicates/similar)
+    # Originals have score=1.0 which skews the histogram
+    if 'is_original' in df.columns:
+        scores = df[(df['is_original'] == False) & (df['similarity_score'] > 0)]['similarity_score']
+    else:
+        # Fallback: exclude score=1.0 (originals)
+        scores = df[(df['similarity_score'] > 0) & (df['similarity_score'] < 1.0)]['similarity_score']
     
     if len(scores) == 0:
         return None
@@ -266,6 +271,12 @@ def add_duplicate_analysis_to_dashboard():
         st.subheader("📊 Copy-Paste Index")
         gauge_fig = render_copy_paste_gauge(copy_paste_ratio)
         st.plotly_chart(gauge_fig, use_container_width=True)
+        
+        # Explanation of the gauge
+        st.caption(f"""
+        **What does this mean?** Out of {total} articles, **{total_copies} ({copy_paste_ratio*100:.0f}%)** 
+        are copies or paraphrases of other news. Lower percentage = more original journalism.
+        """)
         
         # Category breakdown pie
         categories = {

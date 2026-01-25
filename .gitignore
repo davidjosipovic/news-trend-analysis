@@ -20,6 +20,7 @@ wheels/
 .installed.cfg
 *.egg
 *.ipynb
+eval.csv
 # Virtual Environment
 .venv/
 venv/
