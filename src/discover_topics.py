@@ -141,6 +141,10 @@ def discover_topics(
     lead_chars=1200,
     mlflow_experiment_name="topic-modeling",
 ):
+    # Set MLflow tracking URI to local directory (fixes GitHub Actions permission issues)
+    mlflow_tracking_uri = os.environ.get("MLFLOW_TRACKING_URI", "file:./mlruns")
+    mlflow.set_tracking_uri(mlflow_tracking_uri)
+    
     # Start MLflow run
     mlflow.set_experiment(mlflow_experiment_name)
     
