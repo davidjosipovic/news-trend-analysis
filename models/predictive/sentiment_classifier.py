@@ -164,13 +164,23 @@ class SentimentClassifier:
             neg_pct = row['negative_pct']
             neu_pct = row['neutral_pct']
             
-            # Positive: score > 0.25 AND positive is highest or close to highest
-            if score > 0.25 and pos_pct >= neu_pct * 0.8:
+            # Use the class with highest percentage as primary indicator
+            max_pct = max(pos_pct, neu_pct, neg_pct)
+            
+            # If positive has highest percentage AND score is positive
+            if pos_pct == max_pct and score > 0.05:
                 return 'positive'
-            # Negative: score < -0.08 OR negative proportion is high
-            elif score < -0.08 or neg_pct > 0.28:
+            # If negative has highest percentage AND score is negative  
+            elif neg_pct == max_pct and score < -0.05:
                 return 'negative'
-            # Neutral: default when mixed or balanced
+            # If neutral has highest percentage by significant margin (>10% more than others)
+            elif neu_pct == max_pct and neu_pct > pos_pct + 0.10 and neu_pct > neg_pct + 0.10:
+                return 'neutral'
+            # Otherwise use sentiment score as tiebreaker
+            elif score > 0.08:
+                return 'positive'
+            elif score < -0.08:
+                return 'negative'
             else:
                 return 'neutral'
         

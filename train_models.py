@@ -90,6 +90,20 @@ def main():
     )
     
     try:
+        # Train sentiment classifier (for daily sentiment class predictions)
+        print("   [3.1] Training sentiment class predictor...")
+        from models.predictive.sentiment_classifier import train_sentiment_classifier
+        try:
+            sentiment_metrics = train_sentiment_classifier(
+                articles_path=data_path,
+                save_path='models/predictive/sentiment_classifier.joblib'
+            )
+            print(f"   ✅ Sentiment classifier trained (Accuracy: {sentiment_metrics['accuracy']:.2%})")
+        except Exception as e:
+            print(f"   ⚠️  Sentiment classifier training failed: {e}")
+        
+        # Train other models (forecasters, spike detector)
+        print("   [3.2] Training forecasters and spike detector...")
         results = trainer.train_all_models(features_df)
         
         print("\n" + "=" * 80)
