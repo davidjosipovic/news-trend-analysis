@@ -17,6 +17,9 @@ lxml>=4.9.0
 # Optional: For fine-tuned adapter support
 adapter-transformers>=3.2.0
 
+# MLflow for model versioning and tracking
+mlflow>=2.9.0
+
 # Predictive Analytics
 xgboost>=2.0.0
 imbalanced-learn>=0.11.0

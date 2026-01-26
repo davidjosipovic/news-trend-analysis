@@ -3,6 +3,9 @@ import re
 import numpy as np
 import pandas as pd
 import torch
+import mlflow
+import mlflow.pyfunc
+from datetime import datetime
 
 from bertopic import BERTopic
 from bertopic.representation import KeyBERTInspired, MaximalMarginalRelevance
@@ -92,7 +95,7 @@ def _build_model(stopwords):
 
     # Reduce outliers by smoothing the space a bit
     umap_model = UMAP(
-        n_neighbors=40,
+        n_neighbors=50,
         n_components=5,
         min_dist=0.0,
         metric="cosine",
@@ -101,7 +104,7 @@ def _build_model(stopwords):
 
     # Softer clustering -> fewer -1, but still stable
     hdbscan_model = HDBSCAN(
-        min_cluster_size=12,
+        min_cluster_size=8,
         min_samples=2,
         metric="euclidean",
         cluster_selection_method="eom",
@@ -122,7 +125,7 @@ def _build_model(stopwords):
         representation_model=representation_model,
         language="english",
         verbose=True,
-        min_topic_size=10,
+        min_topic_size=5,
         nr_topics="auto",
         top_n_words=10,
         calculate_probabilities=True,
@@ -136,7 +139,11 @@ def discover_topics(
     title_col="title",
     use_title_and_lead=True,
     lead_chars=1200,
+    mlflow_experiment_name="topic-modeling",
 ):
+    # Start MLflow run
+    mlflow.set_experiment(mlflow_experiment_name)
+    
     num_threads = torch.get_num_threads()
     torch.set_num_threads(num_threads)
     print(f"Using CPU with {num_threads} threads")
@@ -179,17 +186,53 @@ def discover_topics(
     stopwords = _make_stopwords()
     topic_model = _build_model(stopwords)
 
-    print("Training topic model...")
-    topics, probs = topic_model.fit_transform(texts)
+    # Start MLflow run
+    with mlflow.start_run(run_name=f"bertopic_{datetime.now().strftime('%Y%m%d_%H%M%S')}"):
+        # Log parameters
+        mlflow.log_param("input_file", input_file)
+        mlflow.log_param("text_col", text_col)
+        mlflow.log_param("title_col", title_col)
+        mlflow.log_param("use_title_and_lead", use_title_and_lead)
+        mlflow.log_param("lead_chars", lead_chars)
+        mlflow.log_param("num_documents", len(texts))
+        mlflow.log_param("min_cluster_size", 8)
+        mlflow.log_param("min_samples", 2)
+        mlflow.log_param("min_topic_size", 5)
+        mlflow.log_param("umap_n_neighbors", 40)
+        mlflow.log_param("umap_n_components", 5)
+        mlflow.log_param("embedding_model", "sentence-transformers/all-mpnet-base-v2")
 
-    outlier_ratio = float(np.mean(np.array(topics) == -1))
-    print(f"Outlier ratio: {outlier_ratio:.2%}")
-    print(topic_model.get_topic_info().head(12))
+        print("Training topic model...")
+        topics, probs = topic_model.fit_transform(texts)
 
-    os.makedirs(output_dir, exist_ok=True)
-    model_path = os.path.join(output_dir, "bertopic_model")
-    topic_model.save(model_path, serialization="pytorch")
-    print(f"Saved model to {model_path}")
+        outlier_ratio = float(np.mean(np.array(topics) == -1))
+        print(f"Outlier ratio: {outlier_ratio:.2%}")
+        print(topic_model.get_topic_info().head(12))
+
+        # Log metrics
+        num_topics = len([t for t in topic_model.get_topics().keys() if t != -1])
+        mlflow.log_metric("num_topics", num_topics)
+        mlflow.log_metric("outlier_ratio", outlier_ratio)
+        mlflow.log_metric("num_outliers", int(np.sum(np.array(topics) == -1)))
+        
+        # Calculate and log topic distribution metrics
+        topic_counts = pd.Series(topics).value_counts()
+        mlflow.log_metric("largest_topic_size", int(topic_counts.iloc[0]))
+        mlflow.log_metric("smallest_topic_size", int(topic_counts.iloc[-1]))
+        mlflow.log_metric("avg_topic_size", float(topic_counts.mean()))
+
+        os.makedirs(output_dir, exist_ok=True)
+        model_path = os.path.join(output_dir, "bertopic_model")
+        topic_model.save(model_path, serialization="pytorch")
+        print(f"Saved model to {model_path}")
+        
+        # Log model to MLflow
+        mlflow.log_artifact(model_path)
+        
+        # Log topic info as artifact
+        topic_info_path = os.path.join(output_dir, "topic_info.csv")
+        topic_model.get_topic_info().to_csv(topic_info_path, index=False)
+        mlflow.log_artifact(topic_info_path)
 
     df["topic"] = topics
 
@@ -202,17 +245,30 @@ def discover_topics(
         filtered = [w for w, _ in words if w.lower() not in label_stop]
         topic_labels[topic_id] = " / ".join(filtered[:3]) if filtered else f"Topic {topic_id}"
 
-    df["topic_label"] = df["topic"].map(topic_labels)
+        df["topic_label"] = df["topic"].map(topic_labels)
 
-    output_csv = "data/processed/articles_with_topics.csv"
-    os.makedirs(os.path.dirname(output_csv), exist_ok=True)
-    df.to_csv(output_csv, index=False)
-    print(f"Saved topics to {output_csv}")
+        output_csv = "data/processed/articles_with_topics.csv"
+        os.makedirs(os.path.dirname(output_csv), exist_ok=True)
+        df.to_csv(output_csv, index=False)
+        print(f"Saved topics to {output_csv}")
+        
+        # Log output CSV as artifact
+        mlflow.log_artifact(output_csv)
 
-    print("\nTop topics:")
-    counts = df["topic"].value_counts().head(20)
-    for tid, cnt in counts.items():
-        print(f"{tid:>4}: {topic_labels.get(tid, str(tid))} ({cnt})")
+        print("\nTop topics:")
+        counts = df["topic"].value_counts().head(20)
+        for tid, cnt in counts.items():
+            print(f"{tid:>4}: {topic_labels.get(tid, str(tid))} ({cnt})")
+        
+        # Log top topics as text artifact
+        top_topics_path = os.path.join(output_dir, "top_topics.txt")
+        with open(top_topics_path, "w") as f:
+            for tid, cnt in counts.items():
+                f.write(f"{tid:>4}: {topic_labels.get(tid, str(tid))} ({cnt})\n")
+        mlflow.log_artifact(top_topics_path)
+        
+        print(f"\nMLflow run completed. Experiment: {mlflow_experiment_name}")
+        print(f"Run ID: {mlflow.active_run().info.run_id}")
 
     return topic_model, topics, df
 
