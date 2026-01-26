@@ -2,7 +2,7 @@
   "calculate_probabilities": true,
   "language": null,
   "low_memory": false,
-  "min_topic_size": 3,
+  "min_topic_size": 10,
   "n_gram_range": [
     1,
     1
