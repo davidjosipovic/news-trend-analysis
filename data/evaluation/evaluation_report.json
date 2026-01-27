@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-01-26T20:54:29.705598",
+  "timestamp": "2026-01-27T08:23:46.840329",
   "metrics": {
     "data_quality": {
-      "total_articles": 1464,
-      "complete_articles": 1464,
+      "total_articles": 1472,
+      "complete_articles": 1472,
       "completeness_rate": 100.0,
-      "avg_text_length": 4300.0,
-      "avg_word_count": 687.0,
+      "avg_text_length": 4302.0,
+      "avg_word_count": 688.0,
       "text_length_range": [
         574,
         238565
@@ -14,25 +14,25 @@
     },
     "sentiment": {
       "distribution": {
-        "neutral": 651,
-        "positive": 534,
-        "negative": 279
+        "neutral": 653,
+        "positive": 539,
+        "negative": 280
       },
       "percentages": {
-        "neutral": 44.5,
-        "positive": 36.5,
-        "negative": 19.1
+        "neutral": 44.4,
+        "positive": 36.6,
+        "negative": 19.0
       },
-      "imbalance_ratio": 2.33
+      "imbalance_ratio": 2.34
     },
     "topics": {
-      "num_topics": 34,
-      "outlier_count": 245,
-      "outlier_rate": 16.73,
-      "avg_topic_size": 35.9,
+      "num_topics": 14,
+      "outlier_count": 251,
+      "outlier_rate": 17.05,
+      "avg_topic_size": 87.2,
       "topic_size_range": [
         8,
-        299
+        932
       ],
       "coherence_proxy": 100.0
     },
@@ -51,18 +51,18 @@
       }
     },
     "temporal": {
-      "articles_with_dates": 1464,
+      "articles_with_dates": 1472,
       "date_range_days": 88,
-      "articles_per_day": 16.64,
+      "articles_per_day": 16.73,
       "start_date": "2025-10-30T04:36:33",
-      "end_date": "2026-01-26T08:44:00"
+      "end_date": "2026-01-26T20:10:00"
     },
     "overall_quality": {
       "score": 73.0,
       "rating": "\u26a0\ufe0f  ACCEPTABLE",
       "component_scores": {
         "data_completeness": 100.0,
-        "sentiment_balance": 86.7,
+        "sentiment_balance": 86.6,
         "topic_quality": 0,
         "summarization": 100
       }
