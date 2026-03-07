@@ -1,18 +1,18 @@
 ============================================================
 NLP Pipeline Evaluation Report
 ============================================================
-Generated: 2026-03-06 20:26:10
+Generated: 2026-03-07 08:29:31
 
 Overall Quality Score: 73.0/100
 Rating: ⚠️  ACCEPTABLE
 
 {
   "data_quality": {
-    "total_articles": 2054,
-    "complete_articles": 2054,
+    "total_articles": 2063,
+    "complete_articles": 2063,
     "completeness_rate": 100.0,
-    "avg_text_length": 4523.0,
-    "avg_word_count": 724.0,
+    "avg_text_length": 4516.0,
+    "avg_word_count": 723.0,
     "text_length_range": [
       574,
       583567
@@ -20,25 +20,25 @@ Rating: ⚠️  ACCEPTABLE
   },
   "sentiment": {
     "distribution": {
-      "neutral": 908,
-      "positive": 753,
-      "negative": 393
+      "neutral": 910,
+      "positive": 758,
+      "negative": 395
     },
     "percentages": {
-      "neutral": 44.2,
+      "neutral": 44.1,
       "positive": 36.7,
       "negative": 19.1
     },
     "imbalance_ratio": 2.31
   },
   "topics": {
-    "num_topics": 39,
-    "outlier_count": 462,
-    "outlier_rate": 22.49,
-    "avg_topic_size": 40.8,
+    "num_topics": 45,
+    "outlier_count": 409,
+    "outlier_rate": 19.83,
+    "avg_topic_size": 36.8,
     "topic_size_range": [
       8,
-      206
+      224
     ],
     "coherence_proxy": 100.0
   },
@@ -46,7 +46,7 @@ Rating: ⚠️  ACCEPTABLE
     "coverage": 100.0,
     "avg_summary_length": 309.0,
     "avg_summary_words": 52.0,
-    "avg_compression_ratio": 15.08,
+    "avg_compression_ratio": 15.05,
     "summary_length_range": [
       129,
       604
@@ -57,11 +57,11 @@ Rating: ⚠️  ACCEPTABLE
     }
   },
   "temporal": {
-    "articles_with_dates": 2054,
+    "articles_with_dates": 2063,
     "date_range_days": 127,
-    "articles_per_day": 16.17,
+    "articles_per_day": 16.24,
     "start_date": "2025-10-30T04:36:33",
-    "end_date": "2026-03-06T08:08:00"
+    "end_date": "2026-03-06T20:10:00"
   },
   "overall_quality": {
     "score": 73.0,
