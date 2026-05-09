@@ -1,17 +1,17 @@
 ============================================================
 NLP Pipeline Evaluation Report
 ============================================================
-Generated: 2026-05-08 20:49:57
+Generated: 2026-05-09 09:00:58
 
 Overall Quality Score: 73.2/100
 Rating: ⚠️  ACCEPTABLE
 
 {
   "data_quality": {
-    "total_articles": 2911,
-    "complete_articles": 2911,
+    "total_articles": 2917,
+    "complete_articles": 2917,
     "completeness_rate": 100.0,
-    "avg_text_length": 4333.0,
+    "avg_text_length": 4337.0,
     "avg_word_count": 694.0,
     "text_length_range": [
       573,
@@ -20,25 +20,25 @@ Rating: ⚠️  ACCEPTABLE
   },
   "sentiment": {
     "distribution": {
-      "neutral": 1263,
-      "positive": 1070,
-      "negative": 578
+      "neutral": 1264,
+      "positive": 1073,
+      "negative": 580
     },
     "percentages": {
-      "neutral": 43.4,
+      "neutral": 43.3,
       "positive": 36.8,
       "negative": 19.9
     },
     "imbalance_ratio": 2.18
   },
   "topics": {
-    "num_topics": 49,
-    "outlier_count": 655,
-    "outlier_rate": 22.5,
-    "avg_topic_size": 46.0,
+    "num_topics": 56,
+    "outlier_count": 721,
+    "outlier_rate": 24.72,
+    "avg_topic_size": 39.2,
     "topic_size_range": [
       8,
-      310
+      308
     ],
     "coherence_proxy": 100.0
   },
@@ -46,7 +46,7 @@ Rating: ⚠️  ACCEPTABLE
     "coverage": 100.0,
     "avg_summary_length": 310.0,
     "avg_summary_words": 52.0,
-    "avg_compression_ratio": 14.36,
+    "avg_compression_ratio": 14.37,
     "summary_length_range": [
       97,
       654
@@ -57,11 +57,11 @@ Rating: ⚠️  ACCEPTABLE
     }
   },
   "temporal": {
-    "articles_with_dates": 2911,
+    "articles_with_dates": 2917,
     "date_range_days": 190,
-    "articles_per_day": 15.32,
+    "articles_per_day": 15.35,
     "start_date": "2025-10-30T04:36:33",
-    "end_date": "2026-05-08T08:21:00"
+    "end_date": "2026-05-08T20:36:00"
   },
   "overall_quality": {
     "score": 73.2,
