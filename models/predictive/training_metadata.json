@@ -1,5 +1,5 @@
 {
-  "model_version": "20260518_205725",
+  "model_version": "20260519_093954",
   "random_seed": 42,
   "n_splits": 5,
   "training_history": [
@@ -7,35 +7,35 @@
       "model_type": "sentiment_forecaster",
       "metrics": {
         "elastic_net": {
-          "MAE": 0.1095,
-          "RMSE": 0.1363,
-          "MAPE": 52.98
+          "MAE": 0.1057,
+          "RMSE": 0.1298,
+          "MAPE": 54.13
         },
         "xgboost": {
-          "MAE": 0.0684,
-          "RMSE": 0.0945,
-          "MAPE": 33.67
+          "MAE": 0.0643,
+          "RMSE": 0.0908,
+          "MAPE": 32.69
         }
       },
       "best_params": {},
-      "trained_at": "2026-05-18T20:57:26.029991"
+      "trained_at": "2026-05-19T09:39:54.709732"
     },
     {
       "model_type": "volume_forecaster",
       "metrics": {
         "elastic_net": {
-          "MAE": 0.2349,
-          "RMSE": 0.2896,
-          "MAPE": 1.84
+          "MAE": 0.2324,
+          "RMSE": 0.2872,
+          "MAPE": 1.78
         },
         "xgboost": {
-          "MAE": 0.5983,
-          "RMSE": 0.8133,
-          "MAPE": 5.08
+          "MAE": 0.5777,
+          "RMSE": 0.7894,
+          "MAPE": 4.73
         }
       },
       "best_params": {},
-      "trained_at": "2026-05-18T20:57:26.124256"
+      "trained_at": "2026-05-19T09:39:54.803020"
     },
     {
       "model_type": "spike_detector",
@@ -46,8 +46,8 @@
         "roc_auc": 0.9963
       },
       "best_params": {},
-      "trained_at": "2026-05-18T20:57:26.470393"
+      "trained_at": "2026-05-19T09:39:55.148230"
     }
   ],
-  "saved_at": "2026-05-18T20:57:26.478699"
+  "saved_at": "2026-05-19T09:39:55.156136"
 }
